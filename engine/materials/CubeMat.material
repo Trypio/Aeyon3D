@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Material>
+    <Shader>Standard</Shader>
+    <Properties>
+        <Texture>
+            <name>diffuse_texture</name>
+            <path>textures/StoneBricks_COLOR.jpg</path>
+        </Texture>
+        <Texture>
+            <name>specular_texture</name>
+            <path>textures/StoneBricks_GLOSS.jpg</path>
+        </Texture>
+        <Texture>
+            <name>normal_texture</name>
+            <path>textures/StoneBricks_NORMAL.jpg</path>
+        </Texture>
+    </Properties>
+</Material>

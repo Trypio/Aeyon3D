@@ -1,0 +1,5 @@
+add_subdirectory(glad)
+add_subdirectory(stb_image)
+add_subdirectory(sol)
+add_subdirectory(pugixml)
+add_subdirectory(stb_vorbis)
