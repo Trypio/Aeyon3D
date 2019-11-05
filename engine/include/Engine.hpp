@@ -15,6 +15,8 @@
 #include "Graphics/GraphicsSystem.hpp"
 #include "Audio/AudioClip.hpp"
 #include <memory>
+#include "TextureCache.hpp"
+#include "ShaderCache.hpp"
 
 namespace aeyon
 {
@@ -27,11 +29,8 @@ namespace aeyon
 		std::unique_ptr<Input> m_input;
 		GraphicsSystem* m_graphics = nullptr;
 
-		ResourceCache<Texture> m_textureCache;
-		ResourceCache<Shader> m_shaderCache;
-		ResourceCache<Material> m_materialCache;
-		ResourceCache<Mesh> m_meshCache;
-		ResourceCache<AudioClip> m_audioClipCache;
+		TextureCache m_textureCache;
+		ShaderCache m_shaderCache;
 
 	public:
 		Engine() = default;

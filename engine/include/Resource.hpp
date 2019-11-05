@@ -11,21 +11,31 @@
 namespace aeyon
 {
 	template <typename T>
-	class ResourceCache;
+	struct ResourceData
+	{
+		std::string name;
+		std::unique_ptr<T> resource;
+		bool isValid;
+
+		ResourceData() : name(""), resource(nullptr), isValid(false)
+		{
+		}
+
+		ResourceData(std::string name, std::unique_ptr<T> resource)
+		: name(std::move(name)), resource(std::move(resource)), isValid(true)
+		{
+		}
+	};
 
 	template<typename T>
 	class Resource
 	{
 	private:
-		ResourceID m_id;
-		ResourceCache<T>* m_cache;
-
-		std::shared_ptr<T> m_managedData;
+		std::shared_ptr<ResourceData<T>> m_data;
 
 	public:
-		Resource();
-		Resource(ResourceID id, ResourceCache<T>* m_cache);
-		explicit Resource(std::shared_ptr<T> ptr);
+		Resource() : m_data(std::make_shared<ResourceData<T>>()) {}
+		explicit Resource(std::shared_ptr<ResourceData<T>> data) : m_data(data) {}
 
 		T* get();
 		const T* get() const;
@@ -37,36 +47,26 @@ namespace aeyon
 	};
 }
 
-#include "ResourceCache.hpp"
-
-template <typename T>
-aeyon::Resource<T>::Resource()
-: m_id(0), m_cache(nullptr), m_managedData(nullptr)
-{
-}
-
-template <typename T>
-aeyon::Resource<T>::Resource(aeyon::ResourceID id, aeyon::ResourceCache<T>* m_cache)
-: m_id(id), m_cache(m_cache), m_managedData(nullptr)
-{
-}
-
-template <typename T>
-aeyon::Resource<T>::Resource(std::shared_ptr<T> ptr)
-: m_id(0), m_cache(nullptr), m_managedData(std::move(ptr))
-{
-}
-
 template<typename T>
 T* aeyon::Resource<T>::get()
 {
-	return m_cache ? m_cache->get(m_id) : m_managedData.get();
+	if (!m_data->isValid)
+	{
+		throw std::runtime_error("Resource is invalid!");
+	}
+
+	return m_data->resource.get();
 }
 
 template<typename T>
 const T* aeyon::Resource<T>::get() const
 {
-	return m_cache ? m_cache->get(m_id) : m_managedData.get();
+	if (!m_data->isValid)
+	{
+		throw std::runtime_error("Resource is invalid!");
+	}
+
+	return m_data->resource.get();
 }
 
 template<typename T>
@@ -96,7 +96,7 @@ const T* aeyon::Resource<T>::operator->() const
 template <typename T>
 bool aeyon::Resource<T>::isValid() const
 {
-	return m_cache ? true : (m_managedData ? true : false);
+	return m_data->isValid;
 }
 
 

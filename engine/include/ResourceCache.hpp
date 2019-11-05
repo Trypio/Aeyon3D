@@ -1,7 +1,6 @@
 //
 //
 //
-
 #ifndef AEYON3D_RESOURCECACHE_HPP
 #define AEYON3D_RESOURCECACHE_HPP
 
@@ -9,77 +8,58 @@
 #include <unordered_map>
 #include <set>
 #include <memory>
-#include <iostream>
-
 #include "Types.hpp"
-
+#include "Resource.hpp"
 
 namespace aeyon
 {
-
-	template <typename T>
-	class Resource;
-
-	template<typename T>
+	template<typename T, typename U>
 	class ResourceCache
 	{
 	private:
-		std::unordered_map<ResourceID, std::unique_ptr<T>> m_resources;
+		std::unordered_map<std::string, std::shared_ptr<ResourceData<T>>> m_resources;
 		std::set<ResourceID> m_usedIds;
 		ResourceID m_idCounter;
-
 		ResourceID getNewResourceID();
+
+		virtual std::unique_ptr<T> create(const U& meta) = 0;
 
 	public:
 		ResourceCache();
 
-		virtual T* get(ResourceID id);
-		virtual Resource<T> load(std::unique_ptr<T> resource);
+		Resource<T> load(const std::string& name, const U& meta);
 	};
 }
 
-
-#include "Resource.hpp"
-
-template <typename T>
-aeyon::ResourceID aeyon::ResourceCache<T>::getNewResourceID()
+namespace aeyon
 {
-	auto it = m_usedIds.lower_bound(m_idCounter);
-	while (it != m_usedIds.end() && *it == m_idCounter)
+	template <typename T, typename U>
+	ResourceID aeyon::ResourceCache<T, U>::getNewResourceID()
 	{
-		it++;
-		m_idCounter++;
-	}
-	m_usedIds.insert(m_idCounter);
-	return m_idCounter++;
-}
-
-
-template <typename T>
-aeyon::ResourceCache<T>::ResourceCache() : m_idCounter(1)
-{
-}
-
-template <typename T>
-T* aeyon::ResourceCache<T>::get(ResourceID id)
-{
-	auto it = m_resources.find(id);
-
-	if (it == m_resources.end())
-	{
-		std::cerr << "No resource with ID " << id << " has been found" << std::endl;
+		auto it = m_usedIds.lower_bound(m_idCounter);
+		while (it != m_usedIds.end() && *it == m_idCounter)
+		{
+			it++;
+			m_idCounter++;
+		}
+		m_usedIds.insert(m_idCounter);
+		return m_idCounter++;
 	}
 
-	return it->second.get();
-}
 
-template <typename T>
-aeyon::Resource<T> aeyon::ResourceCache<T>::load(std::unique_ptr<T> resource)
-{
-	ResourceID id = getNewResourceID();
-	m_resources[id] = std::move(resource);
+	template <typename T, typename U>
+	ResourceCache<T, U>::ResourceCache() : m_idCounter(1)
+	{
+	}
 
-	return Resource<T>(id, this);
+	template <typename T, typename U>
+	Resource<T> ResourceCache<T, U>::load(const std::string& name, const U& meta)
+	{
+		m_resources[name] = std::make_shared<ResourceData<T>>(name, std::move(create(meta)));
+
+		// TODO: Save iterator
+		return Resource<T>(m_resources[name]);
+	}
 }
 
 #endif //AEYON3D_RESOURCECACHE_HPP

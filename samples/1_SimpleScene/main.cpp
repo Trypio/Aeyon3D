@@ -18,26 +18,27 @@ private:
 public:
 	void start() override
 	{
-		Resource<Texture> stoneDiffuse = m_textureCache.load(util::loadTexture2DFromFile("textures/Bricks18_col.jpg", PixelFormat::sRGB8, true));
-		Resource<Texture> stoneGloss = m_textureCache.load(util::loadTexture2DFromFile("textures/Bricks18_rgh.jpg", PixelFormat::R8, true));
-		Resource<Texture> stoneNormals = m_textureCache.load(util::loadTexture2DFromFile("textures/Bricks18_nrm.jpg", PixelFormat::RGB8, true));
-		Resource<Texture> groundDiffuse = m_textureCache.load(util::loadTexture2DFromFile("textures/Ground03_col.jpg", PixelFormat::sRGB8, true));
-		Resource<Texture> groundGloss = m_textureCache.load(util::loadTexture2DFromFile("textures/Ground03_rgh.jpg", PixelFormat::R8, true));
-		Resource<Texture> groundNormals = m_textureCache.load(util::loadTexture2DFromFile("textures/Ground03_nrm.jpg", PixelFormat::RGB8, true));
-		Resource<Texture> skyboxCubemap = m_textureCache.load(util::loadCubeMapFromFiles({
-																																									"textures/right.jpg",
-																																									"textures/left.jpg",
-																																									"textures/top.jpg",
-																																									"textures/bottom.jpg",
-																																									"textures/front.jpg",
-																																									"textures/back.jpg"
-																																							}
-				, PixelFormat::sRGB8, true));
+		Resource<Texture> stoneDiffuse = m_textureCache.load("Bricks18_col", {Texture::Type::Tex2D, {"assets/textures/Bricks18_col.jpg"}, PixelFormat::sRGB8, true});
+		Resource<Texture> stoneGloss = m_textureCache.load("Bricks18_rgh", {Texture::Type::Tex2D, {"assets/textures/Bricks18_rgh.jpg"}, PixelFormat::R8, true});
+		Resource<Texture> stoneNormals = m_textureCache.load("Bricks18_nrm", {Texture::Type::Tex2D, {"assets/textures/Bricks18_nrm.jpg"}, PixelFormat::RGB8, true});
+		Resource<Texture> groundDiffuse = m_textureCache.load("Ground03_col", {Texture::Type::Tex2D, {"assets/textures/Ground03_col.jpg"}, PixelFormat::sRGB8, true});
+		Resource<Texture> groundGloss = m_textureCache.load("Ground03_rgh", {Texture::Type::Tex2D, {"assets/textures/Ground03_rgh.jpg"}, PixelFormat::R8, true});
+		Resource<Texture> groundNormals = m_textureCache.load("Ground03_nrm", {Texture::Type::Tex2D, {"assets/textures/Ground03_nrm.jpg"}, PixelFormat::RGB8, true});
+		Resource<Texture> skyboxCubemap = m_textureCache.load("skybox", {
+				Texture::Type::Cube,
+				{
+						"assets/textures/right.jpg",
+						"assets/textures/left.jpg",
+						"assets/textures/top.jpg",
+						"assets/textures/bottom.jpg",
+						"assets/textures/front.jpg",
+						"assets/textures/back.jpg"
+				}, PixelFormat::sRGB8, true});
 
-		Resource<Shader> standardShader = m_shaderCache.load(util::loadShaderFromFile("shaders/Standard.shader"));
-		Resource<Shader> skyboxShader = m_shaderCache.load(util::loadShaderFromFile("shaders/Skybox.shader"));
+		Resource<Shader> standardShader = m_shaderCache.load("Standard", {"assets/shaders/Standard.shader"});
+		Resource<Shader> skyboxShader = m_shaderCache.load("Skybox", {"assets/shaders/Skybox.shader"});
 
-		Resource<Material> cubeMaterial(std::make_shared<Material>(standardShader));
+		Resource<Material> cubeMaterial(std::make_shared<ResourceData<Material>>("CubeMaterial", std::make_unique<Material>(standardShader)));
 		cubeMaterial->setParameter("diffuse_texture", stoneDiffuse);
 		cubeMaterial->setParameter("specular_texture", stoneGloss);
 		cubeMaterial->setParameter("normal_texture", stoneNormals);
@@ -47,7 +48,7 @@ public:
 		cubeMaterial->setParameter("shininess", 8.0f);
 		cubeMaterial->setTextureScale(glm::vec2(1.0f));
 
-		Resource<Material> groundMaterial(std::make_shared<Material>(standardShader));
+		Resource<Material> groundMaterial(std::make_shared<ResourceData<Material>>("GroundMaterial", std::make_unique<Material>(standardShader)));
 		groundMaterial->setParameter("diffuse_texture", groundDiffuse);
 		groundMaterial->setParameter("specular_texture", groundGloss);
 		groundMaterial->setParameter("normal_texture", groundNormals);
@@ -55,7 +56,7 @@ public:
 		groundMaterial->setParameter("specular_color", glm::vec4(0.2f));
 		groundMaterial->setParameter("shininess", 64.0f);
 
-		Resource<Material> skyBoxMaterial(std::make_shared<Material>(skyboxShader));
+		Resource<Material> skyBoxMaterial(std::make_shared<ResourceData<Material>>("SkyboxMaterial", std::make_unique<Material>(skyboxShader)));
 		skyBoxMaterial->setParameter("skybox", skyboxCubemap);
 
 		auto skyboxEntity = Primitive::createCube(m_world.get(), false, false);

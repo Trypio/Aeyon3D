@@ -12,6 +12,9 @@
 #include "Camera.hpp"
 #include "BoxCollider.hpp"
 #include "Graphics/MeshRenderer.hpp"
+#include "Graphics/Mesh.hpp"
+#include "Resource.hpp"
+#include <memory>
 
 namespace aeyon
 {
@@ -36,7 +39,7 @@ namespace aeyon
 			else
 				format = VertexFormat::P1;
 
-			Resource<Mesh> mesh(std::make_shared<Mesh>(format));
+			Resource<Mesh> mesh(std::make_shared<ResourceData<Mesh>>("Plane", std::make_unique<Mesh>(format)));
 
 			mesh->setPositions(std::vector<glm::vec3>{
 					glm::vec3(-0.5f, 0.5f, -0.5f),
@@ -102,7 +105,7 @@ namespace aeyon
 			else
 				format = VertexFormat::P1;
 
-			Resource<Mesh> mesh(std::make_shared<Mesh>(format));
+			Resource<Mesh> mesh(std::make_shared<ResourceData<Mesh>>("Cube", std::make_unique<Mesh>(format)));
 
 			mesh->setPositions(std::vector<glm::vec3>{
 					// Front Face

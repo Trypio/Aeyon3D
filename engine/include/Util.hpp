@@ -16,6 +16,7 @@
 #include "Graphics/Mesh.hpp"
 #include "stb_vorbis.h"
 #include "Audio/AudioClip.hpp"
+#include <iostream>
 
 namespace aeyon
 {

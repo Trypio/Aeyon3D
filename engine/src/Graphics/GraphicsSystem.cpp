@@ -23,7 +23,7 @@
 namespace aeyon
 {
 	GraphicsSystem::GraphicsSystem(Window* window):  m_window(window),
-	m_shadowMap(std::make_shared<Texture>(Texture::Type::Tex2D, PixelFormat::Depth, ShadowTexWidth, ShadowTexHeight)),
+	m_shadowMap(std::make_shared<ResourceData<Texture>>("ShadowMap", std::make_unique<Texture>(Texture::Type::Tex2D, PixelFormat::Depth, ShadowTexWidth, ShadowTexHeight))),
 	m_shadowFBO(0)
 	{
 		requireComponent<Transform>();
@@ -53,7 +53,7 @@ namespace aeyon
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			std::cout << "Error: The framebuffer is not complete!" << std::endl;
+			throw std::runtime_error("Error: The framebuffer is not complete!");
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -103,7 +103,7 @@ namespace aeyon
 
 		if (m_cameras.empty())
 		{
-			std::cout << "Warning: No main camera defined!" << std::endl;
+			throw std::runtime_error("Warning: No main camera defined!");
 			return;
 		}
 
