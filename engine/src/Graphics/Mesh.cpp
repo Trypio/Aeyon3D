@@ -4,76 +4,94 @@
 
 #include "Graphics/Mesh.hpp"
 #include <algorithm>
-#include <Graphics/Mesh.hpp>
+#include <cstring>
 
 
 namespace aeyon
 {
 	Mesh::Mesh(VertexFormat vertexFormat)
-			: m_vertexBuffer(std::make_unique<VertexBuffer>(getVertexAttributesFromFormat(vertexFormat))),
-				m_indexBuffer(std::make_unique<IndexBuffer>()),
+			: m_vertexBuffer(getVertexAttributesFromFormat(vertexFormat)),
 				m_vertexFormat(vertexFormat),
 				m_needsUpdate(true)
 	{
 	}
 
-	Mesh::Mesh(Mesh&& other) noexcept
+  std::vector<VertexAttribute> Mesh::getVertexAttributesFromFormat(VertexFormat format)
+  {
+    if (format == VertexFormat::P1)
+    {
+      return {
+          { VertexType::Float, 3, false }
+      };
+    }
+    else if (format == VertexFormat::P1N1)
+    {
+      return {
+          { VertexType::Float, 3, false },
+          { VertexType::Float, 3, false }
+      };
+    }
+    else if (format == VertexFormat::P1N1UV1)
+    {
+      return {
+          { VertexType::Float, 3, false },
+          { VertexType::Float, 3, false },
+          { VertexType::Float, 2, false }
+      };
+    }
+    else if (format == VertexFormat::P1N1UV1T1B1)
+    {
+      return {
+          { VertexType::Float, 3, false },
+          { VertexType::Float, 3, false },
+          { VertexType::Float, 2, false },
+          { VertexType::Float, 3, false },
+          { VertexType::Float, 3, false }
+      };
+    }
+    else
+    {
+      return std::vector<VertexAttribute>();
+    }
+  }
+
+  VertexBuffer& Mesh::getVertexBuffer()
+  {
+	  // TODO: check usages
+    return m_vertexBuffer;
+  }
+
+  IndexBuffer& Mesh::getIndexBuffer()
+  {
+    return m_indexBuffer;
+  }
+
+	void Mesh::setMaterial(Resource<Material> material)
 	{
-		*this = std::move(other);
-	}
-
-	Mesh& Mesh::operator=(Mesh&& other) noexcept
-	{
-		m_positions = std::move(other.m_positions);
-		m_normals = std::move(other.m_normals);
-		m_colors = std::move(other.m_colors);
-		m_uvs = std::move(other.m_uvs);
-		m_tangents = std::move(other.m_tangents);
-		m_bitangents = std::move(other.m_bitangents);
-		m_vertexFormat = other.m_vertexFormat;
-		m_needsUpdate = other.m_needsUpdate;
-		m_triangles = std::move(other.m_triangles);
-		m_materials = std::move(other.m_materials);
-		m_sharedMaterials = std::move(other.m_sharedMaterials);
-		m_vertexBuffer = std::move(m_vertexBuffer);
-		m_indexBuffer = std::move(m_indexBuffer);
-
-		other.m_needsUpdate = false;
-
-		return *this;
-	}
-
-
-	void Mesh::setSharedMaterial(Resource<Material> sharedMaterial)
-	{
-		if (m_sharedMaterials.empty())
-			m_sharedMaterials.push_back(sharedMaterial);
+		if (m_materials.empty())
+			m_materials.push_back(std::move(material));
 		else
-			m_sharedMaterials[0] = sharedMaterial;
+      m_materials[0] = std::move(material);
 	}
 
+	void Mesh::setMaterials(std::vector<Resource<Material>> materials)
+  {
+	  m_materials = std::move(materials);
+  }
 
-	Resource<Material> Mesh::getSharedMaterial() const
+	Resource<Material> Mesh::getMaterial() const
 	{
-		// TODO: Request a "Missing Material" if there are no sharedMaterials
-		return m_sharedMaterials.at(0);
+		return m_materials.at(0);
 	}
 
-
-	const std::vector<Resource<Material>>& Mesh::getSharedMaterials() const
+	const std::vector<Resource<Material>>& Mesh::getMaterials() const
 	{
-		return m_sharedMaterials;
+		return m_materials;
 	}
 
-	VertexFormat Mesh::getVertexFormat() const
+	const VertexFormat& Mesh::getVertexFormat() const
 	{
 		return m_vertexFormat;
-	}
-
-	void Mesh::setVertexFormat(VertexFormat vertexFormat)
-	{
-		m_vertexBuffer->setVertexAttributes(getVertexAttributesFromFormat(vertexFormat));
-		m_vertexFormat = vertexFormat;
 	}
 
 	bool Mesh::needsUpdate() const
@@ -101,116 +119,65 @@ namespace aeyon
 				break;
 		}
 
-		if (m_positions.size() * bytesPerElement != m_vertexBuffer->getSize())
+		if (m_positions.size() * bytesPerElement != m_vertexBuffer.getSize())
 		{
-			m_vertexBuffer->reset(m_positions.size() * bytesPerElement);
+			m_vertexBuffer.reset(m_positions.size() * bytesPerElement);
 		}
 
-		// TODO: This is very inefficient
-		std::vector<float> vertexBufferData;
+		std::vector<unsigned char> vertexBufferData(m_positions.size() * bytesPerElement);
 
-		if (m_vertexFormat == VertexFormat::P1)
+		for (std::size_t vIndex = 0; vIndex < m_positions.size(); vIndex++)
+    {
+      std::memcpy(
+          &vertexBufferData[0] + vIndex * bytesPerElement,
+          &m_positions[vIndex],
+          sizeof(glm::vec3)
+          );
+
+		  if (m_vertexFormat == VertexFormat::P1N1 || m_vertexFormat == VertexFormat::P1N1UV1 || m_vertexFormat == VertexFormat::P1N1UV1T1B1)
+      {
+        std::memcpy(
+            &vertexBufferData[0] + vIndex * bytesPerElement + sizeof(glm::vec3),
+            &m_normals[vIndex],
+            sizeof(glm::vec3)
+            );
+      }
+
+		  if (m_vertexFormat == VertexFormat::P1N1UV1 || m_vertexFormat == VertexFormat::P1N1UV1T1B1)
+      {
+        std::memcpy(
+            &vertexBufferData[0] + vIndex * bytesPerElement + 2 * sizeof(glm::vec3),
+            &m_uvs[vIndex],
+            sizeof(glm::vec2)
+        );
+      }
+
+		  if (m_vertexFormat == VertexFormat::P1N1UV1T1B1)
+      {
+        std::memcpy(
+            &vertexBufferData[0] + vIndex * bytesPerElement + 2 * sizeof(glm::vec3) + sizeof(glm::vec2),
+            &m_tangents[vIndex],
+            sizeof(glm::vec3)
+        );
+
+        std::memcpy(
+            &vertexBufferData[0] + vIndex * bytesPerElement + 3 * sizeof(glm::vec3) + sizeof(glm::vec2),
+            &m_bitangents[vIndex],
+            sizeof(glm::vec3)
+        );
+      }
+    }
+
+    m_vertexBuffer.write(vertexBufferData.data(), vertexBufferData.size(), 0);
+
+
+		if (m_triangles.size() * sizeof(TIndex) != m_indexBuffer.getSize())
 		{
-			for (std::size_t vIndex = 0; vIndex < m_positions.size(); vIndex++)
-			{
-				vertexBufferData.push_back(m_positions[vIndex].x);
-				vertexBufferData.push_back(m_positions[vIndex].y);
-				vertexBufferData.push_back(m_positions[vIndex].z);
-			}
-		}
-		else if (m_vertexFormat == VertexFormat::P1N1)
-		{
-			for (std::size_t vIndex = 0; vIndex < m_positions.size(); vIndex++)
-			{
-				vertexBufferData.push_back(m_positions[vIndex].x);
-				vertexBufferData.push_back(m_positions[vIndex].y);
-				vertexBufferData.push_back(m_positions[vIndex].z);
-
-				vertexBufferData.push_back(m_normals[vIndex].x);
-				vertexBufferData.push_back(m_normals[vIndex].y);
-				vertexBufferData.push_back(m_normals[vIndex].z);
-			}
-		}
-		else if (m_vertexFormat == VertexFormat::P1N1UV1)
-		{
-			for (std::size_t vIndex = 0; vIndex < m_positions.size(); vIndex++)
-			{
-				vertexBufferData.push_back(m_positions[vIndex].x);
-				vertexBufferData.push_back(m_positions[vIndex].y);
-				vertexBufferData.push_back(m_positions[vIndex].z);
-
-				vertexBufferData.push_back(m_normals[vIndex].x);
-				vertexBufferData.push_back(m_normals[vIndex].y);
-				vertexBufferData.push_back(m_normals[vIndex].z);
-
-				vertexBufferData.push_back(m_uvs[vIndex].x);
-				vertexBufferData.push_back(m_uvs[vIndex].y);
-			}
-		}
-		else if (m_vertexFormat == VertexFormat::P1N1UV1T1B1)
-		{
-			for (std::size_t vIndex = 0; vIndex < m_positions.size(); vIndex++)
-			{
-				vertexBufferData.push_back(m_positions[vIndex].x);
-				vertexBufferData.push_back(m_positions[vIndex].y);
-				vertexBufferData.push_back(m_positions[vIndex].z);
-
-				vertexBufferData.push_back(m_normals[vIndex].x);
-				vertexBufferData.push_back(m_normals[vIndex].y);
-				vertexBufferData.push_back(m_normals[vIndex].z);
-
-				vertexBufferData.push_back(m_uvs[vIndex].x);
-				vertexBufferData.push_back(m_uvs[vIndex].y);
-
-				vertexBufferData.push_back(m_tangents[vIndex].x);
-				vertexBufferData.push_back(m_tangents[vIndex].y);
-				vertexBufferData.push_back(m_tangents[vIndex].z);
-
-				vertexBufferData.push_back(m_bitangents[vIndex].x);
-				vertexBufferData.push_back(m_bitangents[vIndex].y);
-				vertexBufferData.push_back(m_bitangents[vIndex].z);
-
-			}
+			m_indexBuffer.reset(m_triangles.size() * sizeof(TIndex));
 		}
 
-
-		m_vertexBuffer->write(0, vertexBufferData.size() * sizeof(float), vertexBufferData.data());
-
-
-		if (m_triangles.size() * sizeof(unsigned int) != m_indexBuffer->getSize())
-		{
-			m_indexBuffer->reset(m_triangles.size() * sizeof(unsigned int));
-		}
-
-		m_indexBuffer->write(0, m_triangles.size() * sizeof(unsigned int), m_triangles.data());
-
-
-		glm::vec3 min(std::numeric_limits<float>::min()), max(std::numeric_limits<float>::max());
-
-		for (const auto& pos : m_positions)
-		{
-			if (pos.x < min.x)
-				min.x = pos.x;
-
-			if (pos.y < min.y)
-				min.y = pos.y;
-
-			if (pos.z < min.z)
-				min.z = pos.z;
-
-			if (pos.x > max.x)
-				max.x = pos.x;
-
-			if (pos.y > max.y)
-				max.y = pos.y;
-
-			if (pos.z > max.z)
-				max.z = pos.z;
-		}
-
-		m_bounds.setCenter(glm::vec3(0.0f));
-		m_bounds.setSize(max - min);
-
+    m_indexBuffer.write(m_triangles.data(), m_triangles.size() * sizeof(TIndex), 0);
+		
 		m_needsUpdate = false;
 	}
 
@@ -228,7 +195,7 @@ namespace aeyon
 				p1 = m_positions[m_triangles[i + 1]];
 				p2 = m_positions[m_triangles[i + 2]];
 
-				n = glm::normalize(glm::cross(p1 - p0, p2 - p0));
+				n = glm::normalize(glm::cross(p2 - p0, p1 - p0));
 
 				m_normals[m_triangles[i]] += n;
 				m_normals[m_triangles[i + 1]] += n;
@@ -248,7 +215,7 @@ namespace aeyon
 		m_tangents.resize(m_positions.size());
 		m_bitangents.resize(m_positions.size());
 
-		for (unsigned int i = 0; i < m_triangles.size(); i += 3)
+		for (std::size_t i = 0; i < m_triangles.size(); i += 3)
 		{
 			glm::vec3& v0 = m_positions[m_triangles[i]];
 			glm::vec3& v1 = m_positions[m_triangles[i + 1]];
@@ -294,56 +261,124 @@ namespace aeyon
 
 		m_needsUpdate = true;
 	}
-
-
-	Bounds Mesh::getBoundingBox() const
+	
+	Bounds Mesh::getBounds() const
 	{
-		Bounds bb;
-		
-		glm::vec3 pMin(std::numeric_limits<float>::max()), pMax(std::numeric_limits<float>::min());
-		
-		for (const auto& p : m_positions)
-		{
-			if (p.x < pMin.x)
-				pMin.x = p.x;
-			if (p.y < pMin.y)
-				pMin.y = p.y;
-			if (p.z < pMin.z)
-				pMin.z = p.z;
-
-			if (p.x > pMax.x)
-				pMax.x = p.x;
-			if (p.y > pMax.y)
-				pMax.y = p.y;
-			if (p.z > pMax.z)
-				pMax.z = p.z;
-		}
-
-		bb.setSize(pMax - pMin);
-		bb.setCenter(pMax - bb.getExtents());
-
-		return bb;
+	  return Bounds::fromPoints(m_positions);
 	}
 
+  void Mesh::setPosition(std::size_t index, glm::vec3 position)
+  {
+    m_positions.at(index) = std::move(position);
+    m_needsUpdate = true;
+  }
+  
+  void Mesh::setNormal(std::size_t index, glm::vec3 normal)
+  {
+    m_normals.at(index) = std::move(normal);
+    m_needsUpdate = true;
+  }
+
+  void Mesh::setColor(std::size_t index, Color color)
+  {
+    m_colors.at(index) = std::move(color);
+    m_needsUpdate = true;
+  }
+
+  void Mesh::setUV(std::size_t index, glm::vec2 uv)
+  {
+    m_uvs.at(index) = std::move(uv);
+    m_needsUpdate = true;
+  }
+
+  void Mesh::setTangent(std::size_t index, glm::vec3 tangent)
+  {
+    m_tangents.at(index) = std::move(tangent);
+    m_needsUpdate = true;
+  }
+  void Mesh::setBitangent(std::size_t index, glm::vec3 bitangent)
+  {
+    m_bitangents.at(index) = std::move(bitangent);
+    m_needsUpdate = true;
+  }
+	
+  void Mesh::setPositions(std::vector<glm::vec3> positions)
+  {
+    m_positions = std::move(positions);
+    m_needsUpdate = true;
+  }
+  
+  void Mesh::setNormals(std::vector<glm::vec3> normals)
+  {
+    m_normals = std::move(normals);
+    m_needsUpdate = true;
+  }
+  
+  void Mesh::setColors(std::vector<Color> colors)
+  {
+    m_colors = std::move(colors);
+    m_needsUpdate = true;
+  }
+  
+  void Mesh::setUVs(std::vector<glm::vec2> uvs)
+  {
+    m_uvs = std::move(uvs);
+    m_needsUpdate = true;
+  }
+  
+  void Mesh::setTangents(std::vector<glm::vec3> tangents)
+  {
+    m_tangents = std::move(tangents);
+    m_needsUpdate = true;
+  }
+  
+  void Mesh::setBitangents(std::vector<glm::vec3> bitangents)
+  {
+    m_bitangents = std::move(bitangents);
+    m_needsUpdate = true;
+  }
+  
+  void Mesh::setTriangles(std::vector<TIndex> indices)
+  {
+    m_triangles = std::move(indices);
+    m_needsUpdate = true;
+  }
+  
+	
 	const glm::vec3& Mesh::getPosition(std::size_t index) const
 	{
-		return m_positions[index];
+		return m_positions.at(index);
 	}
 
-	const std::vector<glm::vec3>& Mesh::getPositions() const
+  const glm::vec3& Mesh::getNormal(std::size_t index) const
+  {
+    return m_normals.at(index);
+  }
+
+  const Color& Mesh::getColor(std::size_t index) const
+  {
+    return m_colors.at(index);
+  }
+
+  const glm::vec2& Mesh::getUV(std::size_t index) const
+  {
+    return m_uvs.at(index);
+  }
+
+  const glm::vec3& Mesh::getTangent(std::size_t index) const
+  {
+    return m_tangents.at(index);
+  }
+  
+  const glm::vec3& Mesh::getBitangent(std::size_t index) const
+  {
+    return m_bitangents.at(index);
+  }
+
+
+  const std::vector<glm::vec3>& Mesh::getPositions() const
 	{
 		return m_positions;
-	}
-
-	void Mesh::setPosition(std::size_t index, const glm::vec3& position)
-	{
-		m_positions[index] = position;
-		m_needsUpdate = true;
-	}
-
-	const glm::vec3& Mesh::getNormal(std::size_t index) const
-	{
-		return m_normals[index];
 	}
 
 	const std::vector<glm::vec3>& Mesh::getNormals() const
@@ -351,31 +386,9 @@ namespace aeyon
 		return m_normals;
 	}
 
-	void Mesh::setNormal(std::size_t index, const glm::vec3& normal)
-	{
-		m_normals[index] = normal;
-		m_needsUpdate = true;
-	}
-
-	const glm::vec4& Mesh::getColor(std::size_t index) const
-	{
-		return m_colors[index];
-	}
-
-	const std::vector<glm::vec4>& Mesh::getColors() const
+	const std::vector<Color>& Mesh::getColors() const
 	{
 		return m_colors;
-	}
-
-	void Mesh::setColor(std::size_t index, const glm::vec4& color)
-	{
-		m_colors[index] = color;
-		m_needsUpdate = true;
-	}
-
-	const glm::vec2& Mesh::getUV(std::size_t index) const
-	{
-		return m_uvs[index];
 	}
 
 	const std::vector<glm::vec2>& Mesh::getUVs() const
@@ -383,32 +396,9 @@ namespace aeyon
 		return m_uvs;
 	}
 
-	void Mesh::setUV(std::size_t index, const glm::vec2& uv)
-	{
-		m_uvs[index] = uv;
-		m_needsUpdate = true;
-	}
-
-	const glm::vec3& Mesh::getTangent(std::size_t index) const
-	{
-		return m_tangents[index];
-	}
-
 	const std::vector<glm::vec3>& Mesh::getTangents() const
 	{
 		return m_tangents;
-	}
-
-	void Mesh::setTangent(std::size_t index, const glm::vec3& tangent)
-	{
-		m_tangents[index] = tangent;
-		m_needsUpdate = true;
-	}
-
-
-	const glm::vec3& Mesh::getBitangent(std::size_t index) const
-	{
-		return m_bitangents[index];
 	}
 
 	const std::vector<glm::vec3>& Mesh::getBitangents() const
@@ -416,58 +406,8 @@ namespace aeyon
 		return m_bitangents;
 	}
 
-	void Mesh::setBitangent(std::size_t index, const glm::vec3& bitangent)
-	{
-		m_bitangents[index] = bitangent;
-		m_needsUpdate = true;
-	}
-
-	const std::vector<unsigned int>& Mesh::getTriangles() const
+	const std::vector<TIndex>& Mesh::getTriangles() const
 	{
 		return m_triangles;
-	}
-
-	std::vector<VertexAttribute> Mesh::getVertexAttributesFromFormat(VertexFormat format)
-	{
-		if (format == VertexFormat::P1)
-		{
-			return {
-					{ VertexType::Float, 3, false }
-			};
-		}
-		else if (format == VertexFormat::P1N1)
-		{
-			return {
-					{ VertexType::Float, 3, false },
-					{ VertexType::Float, 3, false }
-			};
-		}
-		else if (format == VertexFormat::P1N1UV1)
-		{
-			return {
-					{ VertexType::Float, 3, false },
-					{ VertexType::Float, 3, false },
-					{ VertexType::Float, 2, false }
-			};
-		}
-		else if (format == VertexFormat::P1N1UV1T1B1)
-		{
-			return {
-					{ VertexType::Float, 3, false },
-					{ VertexType::Float, 3, false },
-					{ VertexType::Float, 2, false },
-					{ VertexType::Float, 3, false },
-					{ VertexType::Float, 3, false }
-			};
-		}
-		else
-		{
-			return std::vector<VertexAttribute>();
-		}
-	}
-
-	const Bounds& Mesh::getBounds() const
-	{
-		return m_bounds;
 	}
 }

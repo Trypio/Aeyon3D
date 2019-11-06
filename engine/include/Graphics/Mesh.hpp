@@ -15,66 +15,43 @@
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 
-// TODO: Material system still doesn't work as desired. I've removed the const qualifier of getMaterial() which allows
-//       for setting material properties after calling getMaterial() in the renderer, but it isn't clear if
-//       getMaterial() returns an instantiated or shared material. Is it enough that the user should set this via
-//       setMaterial() only? I should clearly rework the 'shared mesh' system...
-
 namespace aeyon
 {
 	class Mesh
 	{
-	public:
-		static std::vector<VertexAttribute> getVertexAttributesFromFormat(VertexFormat format);
-
 	private:
 		std::vector<glm::vec3> m_positions;
 		std::vector<glm::vec3> m_normals;
-		std::vector<glm::vec4> m_colors;
+		std::vector<Color> m_colors;
 		std::vector<glm::vec2> m_uvs;
 		std::vector<glm::vec3> m_tangents;
 		std::vector<glm::vec3> m_bitangents;
-		std::vector<unsigned int> m_triangles;
+		std::vector<TIndex> m_triangles;
 
-		std::vector<Material*> m_materials;
-		std::vector<Resource<Material>> m_sharedMaterials;
+		std::vector<Resource<Material>> m_materials;
 
-		std::unique_ptr<VertexBuffer> m_vertexBuffer;
-		std::unique_ptr<IndexBuffer> m_indexBuffer;
+		VertexBuffer m_vertexBuffer;
+		IndexBuffer m_indexBuffer;
 
 		VertexFormat m_vertexFormat;
-
-		Bounds m_bounds;
-
+		
 		bool m_needsUpdate;
 
 	public:
+    static std::vector<VertexAttribute> getVertexAttributesFromFormat(VertexFormat format);
+
 		explicit Mesh(VertexFormat vertexFormat);
 
-		Mesh(const Mesh& other) = delete;
-		Mesh& operator=(const Mesh& other) = delete;
+		VertexBuffer& getVertexBuffer();
+		IndexBuffer& getIndexBuffer();
 
-		Mesh(Mesh&& other) noexcept;
-		Mesh& operator=(Mesh&&) noexcept;
+		void setMaterial(Resource<Material> material);
+		void setMaterials(std::vector<Resource<Material>> materials);
 
-		VertexBuffer* getVertexBuffer()
-		{
-			return m_vertexBuffer.get();
-		}
+		Resource<Material> getMaterial() const;
+		const std::vector<Resource<Material>>& getMaterials() const;
 
-		IndexBuffer* getIndexBuffer()
-		{
-			return m_indexBuffer.get();
-		}
-
-		void setSharedMaterial(Resource<Material> sharedMaterial);
-		template <typename T> void setSharedMaterials(T&& sharedMaterials);
-
-		Resource<Material> getSharedMaterial() const;
-		const std::vector<Resource<Material>>& getSharedMaterials() const;
-
-		VertexFormat getVertexFormat() const;
-		void setVertexFormat(VertexFormat vertexFormat);
+		const VertexFormat& getVertexFormat() const;
 
 		bool needsUpdate() const;
 		void apply();
@@ -83,96 +60,38 @@ namespace aeyon
 
 		void clear();
 
-		Bounds getBoundingBox() const;
+		Bounds getBounds() const;
 
-		void setPosition(std::size_t index, const glm::vec3& position);
-		void setNormal(std::size_t index, const glm::vec3& normal);
-		void setColor(std::size_t index, const glm::vec4& color);
-		void setUV(std::size_t index, const glm::vec2& uv);
-		void setTangent(std::size_t index, const glm::vec3& tangent);
-		void setBitangent(std::size_t index, const glm::vec3& bitangent);
+		void setPosition(std::size_t index, glm::vec3 position);
+		void setNormal(std::size_t index, glm::vec3 normal);
+		void setColor(std::size_t index, Color color);
+		void setUV(std::size_t index, glm::vec2 uv);
+		void setTangent(std::size_t index, glm::vec3 tangent);
+		void setBitangent(std::size_t index, glm::vec3 bitangent);
 
-		template <typename T> void setPositions(T&& positions);
-		template <typename T> void setNormals(T&& normals);
-		template <typename T> void setColors(T&& colors);
-		template <typename T> void setUVs(T&& uvs);
-		template <typename T> void setTangents(T&& tangents);
-		template <typename T> void setBitangents(T&& bitangents);
-		template <typename T> void setTriangles(T&& indices);
+		void setPositions(std::vector<glm::vec3> positions);
+		void setNormals(std::vector<glm::vec3> normals);
+		void setColors(std::vector<Color> colors);
+		void setUVs(std::vector<glm::vec2> uvs);
+		void setTangents(std::vector<glm::vec3> tangents);
+		void setBitangents(std::vector<glm::vec3> bitangents);
+		void setTriangles(std::vector<TIndex> indices);
 
 		const glm::vec3& getPosition(std::size_t index) const;
 		const glm::vec3& getNormal(std::size_t index) const;
-		const glm::vec4& getColor(std::size_t index) const;
+		const Color& getColor(std::size_t index) const;
 		const glm::vec2& getUV(std::size_t index) const;
 		const glm::vec3& getTangent(std::size_t index) const;
 		const glm::vec3& getBitangent(std::size_t index) const;
 
 		const std::vector<glm::vec3>& getPositions() const;
 		const std::vector<glm::vec3>& getNormals() const;
-		const std::vector<glm::vec4>& getColors() const;
+		const std::vector<Color>& getColors() const;
 		const std::vector<glm::vec2>& getUVs() const;
 		const std::vector<glm::vec3>& getTangents() const;
 		const std::vector<glm::vec3>& getBitangents() const;
-		const std::vector<unsigned int>& getTriangles() const;
-
-		const Bounds& getBounds() const;
+		const std::vector<TIndex>& getTriangles() const;
 	};
-
-
-	template<typename T>
-	void Mesh::setPositions(T&& positions)
-	{
-		m_positions = std::forward<T>(positions);
-		m_needsUpdate = true;
-	}
-
-	template<typename T>
-	void Mesh::setNormals(T&& normals)
-	{
-		m_normals = std::forward<T>(normals);
-		m_needsUpdate = true;
-	}
-
-	template<typename T>
-	void Mesh::setColors(T&& colors)
-	{
-		m_colors = std::forward<T>(colors);
-		m_needsUpdate = true;
-	}
-
-	template<typename T>
-	void Mesh::setUVs(T&& uvs)
-	{
-		m_uvs = std::forward<T>(uvs);
-		m_needsUpdate = true;
-	}
-
-	template<typename T>
-	void Mesh::setTangents(T&& tangents)
-	{
-		m_tangents = std::forward<T>(tangents);
-		m_needsUpdate = true;
-	}
-
-	template<typename T>
-	void Mesh::setBitangents(T&& bitangents)
-	{
-		m_bitangents = std::forward<T>(bitangents);
-		m_needsUpdate = true;
-	}
-
-	template<typename T>
-	void Mesh::setTriangles(T&& indices)
-	{
-		m_triangles = std::forward<T>(indices);
-		m_needsUpdate = true;
-	}
-
-	template<typename T>
-	void Mesh::setSharedMaterials(T&& sharedMaterials)
-	{
-		m_sharedMaterials = std::forward<T>(sharedMaterials);
-	}
 }
 
 

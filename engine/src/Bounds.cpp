@@ -19,6 +19,23 @@ namespace aeyon
 		setSize(size);
 	}
 
+	Bounds Bounds::fromPoints(const std::vector<glm::vec3>& points)
+  {
+    glm::vec3 min(std::numeric_limits<float>::max()), max(std::numeric_limits<float>::min());
+
+    for (const auto& p : points)
+    {
+      min.x = std::min(min.x, p.x);
+      min.y = std::min(min.y, p.y);
+      min.z = std::min(min.z, p.z);
+      max.x = std::max(max.x, p.x);
+      max.y = std::max(max.y, p.y);
+      max.z = std::max(max.z, p.z);
+    }
+
+    return Bounds(max - (max - min) / 2.0f, max - min);
+  }
+
 	bool Bounds::contains(const glm::vec3& point) const
 	{
 		return point.x >= m_min.x && point.y >= m_min.y && point.z >= m_min.z

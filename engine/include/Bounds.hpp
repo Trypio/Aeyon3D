@@ -6,6 +6,7 @@
 #define AEYON3D_BOUNDS_HPP
 
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace aeyon
 {
@@ -18,6 +19,8 @@ namespace aeyon
 		glm::vec3 m_min, m_max;
 
 	public:
+	  static Bounds fromPoints(const std::vector<glm::vec3>& points);
+
 		Bounds();
 		Bounds(const glm::vec3& center, const glm::vec3& size);
 

@@ -14,6 +14,10 @@ set(SOURCE_FILES
         src/Event/EventSystem.cpp
         src/Input/SDLInput.cpp
         src/Bounds.cpp
+        src/Plane.cpp
+        src/Graphics/Frustum.cpp
+        src/Graphics/IndexBuffer.cpp
+        src/Graphics/VertexBuffer.cpp
         src/BoxCollider.cpp
         src/Camera.cpp
         src/Color.cpp

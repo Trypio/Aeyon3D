@@ -65,7 +65,7 @@ public:
 		auto positions = skyBoxMesh->getPositions();
 		std::for_each(positions.begin(), positions.end(), [](glm::vec3& v) { v *= 2.0f; });
 		skyBoxMesh->setPositions(std::move(positions));
-		skyBoxMesh->setSharedMaterial(skyBoxMaterial);
+    skyBoxMesh->setMaterial(skyBoxMaterial);
 		skyBoxMesh->apply();
 
 		m_graphics->setSkybox(skyboxEntity);
@@ -74,13 +74,13 @@ public:
 		cubeTransform1 = cube1.getComponent<Transform>();
 		cubeTransform1->setPosition({0.5f, 0.5f, 0.5f});
 		auto cubeMesh1 = cube1.getComponent<MeshRenderer>()->getSharedMesh();
-		cubeMesh1->setSharedMaterial(cubeMaterial);
+    cubeMesh1->setMaterial(cubeMaterial);
 
 		auto cube2 = Primitive::createCube(m_world.get());
 		cubeTransform2 = cube2.getComponent<Transform>();
 		cubeTransform2->setPosition({2.0f, 0.5f, 0.0f});
 		auto cubeMesh2 = cube2.getComponent<MeshRenderer>()->getSharedMesh();
-		cubeMesh2->setSharedMaterial(cubeMaterial);
+    cubeMesh2->setMaterial(cubeMaterial);
 
 
 
@@ -89,7 +89,7 @@ public:
 		groundTransform->setScale({50.0f, 0.1f, 50.0f});
 		auto groundMesh = ground.getComponent<MeshRenderer>()->getSharedMesh();
 		groundMaterial->setTextureScale({50.0f, 50.0f});
-		groundMesh->setSharedMaterial(groundMaterial);
+    groundMesh->setMaterial(groundMaterial);
 
 		auto directionalLight = m_world->createEntity();
 		auto directionalLightTransform = directionalLight.addComponent<Transform>();

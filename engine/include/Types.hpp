@@ -46,6 +46,8 @@ namespace aeyon
 		bool normalized;
 	};
 
+	using TIndex = GLuint;
+
 };
 
 #endif //AEYON3D_TYPES_HPP

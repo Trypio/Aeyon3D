@@ -152,11 +152,11 @@ namespace aeyon
 
 			auto skyBoxMesh = m_skyBox.getComponent<MeshRenderer>()->getSharedMesh();
 
-			Batch& b = m_batches[skyBoxMesh->getSharedMaterial().get()];
+			Batch& b = m_batches[skyBoxMesh->getMaterial().get()];
 
-			b.material = skyBoxMesh->getSharedMaterial();
-			b.vaos.push_back(*static_cast<GLuint*>(skyBoxMesh->getVertexBuffer()->getNativeHandle()));
-			b.ebos.push_back(*static_cast<GLuint*>(skyBoxMesh->getIndexBuffer()->getNativeHandle()));
+			b.material = skyBoxMesh->getMaterial();
+			b.vaos.push_back(*static_cast<GLuint*>(skyBoxMesh->getVertexBuffer().getNativeHandle()));
+			b.ebos.push_back(*static_cast<GLuint*>(skyBoxMesh->getIndexBuffer().getNativeHandle()));
 			b.transforms.push_back(m_skyBox.getComponent<Transform>());
 			b.numTriangles.push_back(skyBoxMesh->getTriangles().size());
 
@@ -221,7 +221,7 @@ namespace aeyon
 				//Frustum culling
 				//TODO: Implement OBB test
 				//TODO: Adjust culling for shadow casters
-				const Bounds& bb = mesh->getBoundingBox();
+				Bounds bb = mesh->getBounds();
 
 				const auto& toWorld = entity.getComponent<Transform>()->getLocalToWorldMatrix();
 
@@ -236,15 +236,12 @@ namespace aeyon
 						glm::vec3(toWorld * glm::vec4(bb.getMax() - glm::vec3(0.0f, 0.0f, bb.getSize().z), 1.0f))
 				};
 
-				if (!m_cameras[0].frustum.testBox(vs))
+				if (!m_cameras[0].frustum.intersects(vs))
 				{
 					continue;
 				}
 
-				auto material = mesh->getSharedMaterial();
-
-				if (mesh->needsUpdate())
-					mesh->apply();
+				auto material = mesh->getMaterial();
 
 				if (material->getShader()->getName() != shaderName)
 					continue;
@@ -252,8 +249,8 @@ namespace aeyon
 				Batch& batch = m_batches[material.get()];
 				batch.material = material;
 
-				batch.vaos.push_back(*static_cast<GLuint*>(mesh->getVertexBuffer()->getNativeHandle()));
-				batch.ebos.push_back(*static_cast<GLuint*>(mesh->getIndexBuffer()->getNativeHandle()));
+				batch.vaos.push_back(*static_cast<GLuint*>(mesh->getVertexBuffer().getNativeHandle()));
+				batch.ebos.push_back(*static_cast<GLuint*>(mesh->getIndexBuffer().getNativeHandle()));
 				batch.transforms.push_back(entity.getComponent<Transform>());
 				batch.numTriangles.push_back(mesh->getTriangles().size());
 			}
