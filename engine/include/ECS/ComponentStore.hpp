@@ -9,7 +9,7 @@
 #include <queue>
 #include <memory>
 #include "ComponentStoreBase.hpp"
-#include "ComponentHandleInfo.hpp"
+#include "ComponentHandleDetails.hpp"
 #include "ECSException.hpp"
 
 namespace aeyon
@@ -40,7 +40,7 @@ namespace aeyon
 		std::array<T, MaxNumberOfComponents> m_components;
 		ComponentInstance::ID m_instanceCounter = 1;
 		std::queue<ComponentInstance::ID> m_unusedInstances;
-		std::array<std::shared_ptr<ComponentHandleInfo<T>>, MaxNumberOfComponents> m_componentHandles;
+		std::array<std::shared_ptr<ComponentHandleDetails<T>>, MaxNumberOfComponents> m_componentHandles;
 
 
 	public:
@@ -52,7 +52,7 @@ namespace aeyon
 		 * Creates a new component and returns unique information about it as a shared pointer
 		 */
 		template <typename ...P>
-		std::shared_ptr<ComponentHandleInfo<T>> createComponent(P&& ... parameters)
+		std::shared_ptr<ComponentHandleDetails<T>> createComponent(P&& ... parameters)
 		{
 			ComponentInstance newInstance = createInstance();
 
@@ -68,7 +68,7 @@ namespace aeyon
 
 			m_components[newInstance.getID()] = T(std::forward<P>(parameters)...);
 
-			auto ptr = std::make_shared<ComponentHandleInfo<T>>(Entity::Invalid, this, newInstance);
+			auto ptr = std::make_shared<ComponentHandleDetails<T>>(this, newInstance, Entity::Invalid);
 			m_componentHandles[newInstance.getID()] = ptr;
 
 			return ptr;
@@ -79,7 +79,7 @@ namespace aeyon
 		 * invalid! Make sure that the component implements at least a copy constructor.
 		 */
 		template <typename ...P>
-		std::shared_ptr<ComponentHandleInfo<T>> copyComponent(const ComponentInstance& srcInstance)
+		std::shared_ptr<ComponentHandleDetails<T>> copyComponent(const ComponentInstance& srcInstance)
 		{
 			if (!srcInstance)
 			{
@@ -105,7 +105,7 @@ namespace aeyon
 
 			m_components[newInstance] = T(m_components[srcInstance]);
 
-			auto ptr = std::make_shared<ComponentHandleInfo<T>>(Entity::Invalid, this, newInstance);
+			auto ptr = std::make_shared<ComponentHandleDetails<T>>(Entity::Invalid, this, newInstance);
 			m_componentHandles[newInstance] = ptr;
 
 			return ptr;
@@ -129,10 +129,9 @@ namespace aeyon
 			m_unusedInstances.push(instance.getID());
 			m_components[instance.getID()] = T();
 			auto& ptr = m_componentHandles[instance.getID()];
-			ptr->entity = Entity::Invalid;
+			ptr->owner = Entity::Invalid;
 			ptr->store = nullptr;
 			ptr->instance = ComponentInstance::Invalid;
-			ptr->isValid = false;
 			ptr.reset();
 		}
 
@@ -159,7 +158,7 @@ namespace aeyon
 			return getComponent(instance);
 		}
 
-		std::shared_ptr<ComponentHandleInfo<T>> getComponentHandleInfo(const ComponentInstance& instance) const
+		std::shared_ptr<ComponentHandleDetails<T>> getComponentHandleDetails(const ComponentInstance& instance) const
 		{
 			if (!instance)
 			{

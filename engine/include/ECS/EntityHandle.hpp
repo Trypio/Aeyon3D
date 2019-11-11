@@ -8,7 +8,7 @@
 #include "ComponentHandle.hpp"
 #include "Entity.hpp"
 #include "World.hpp"
-#include "EntityHandleInfo.hpp"
+#include "EntityHandleDetails.hpp"
 
 namespace aeyon
 {
@@ -19,12 +19,11 @@ namespace aeyon
 	class EntityHandle
 	{
 	private:
-		std::shared_ptr<EntityHandleInfo> m_handleInfo;
-		World* m_world = nullptr;
+		std::shared_ptr<EntityHandleDetails> m_details;
 
 	public:
 		EntityHandle() = default;
-		EntityHandle(std::shared_ptr<EntityHandleInfo> handleInfo, World* world);
+		EntityHandle(std::shared_ptr<EntityHandleDetails> details);
 
 		/**
 		 * Destroys the component and invalidates the handle
@@ -33,7 +32,6 @@ namespace aeyon
 
 		bool isValid() const;
 		explicit operator bool() const;
-		bool operator!() const;
 
 		friend bool operator==(const EntityHandle& lhs, const EntityHandle& rhs);
 		friend bool operator!=(const EntityHandle& lhs, const EntityHandle& rhs);
@@ -47,7 +45,7 @@ namespace aeyon
 		template <typename T, typename ...P>
 		ComponentHandle<T> addComponent(P&&... parameters)
 		{
-			return m_world->addComponent<T>(m_handleInfo->entity, std::forward<P>(parameters)...);
+			return m_details->world->addComponent<T>(m_details->entity, std::forward<P>(parameters)...);
 		}
 
 		/**
@@ -56,13 +54,13 @@ namespace aeyon
 		template <typename T>
 		void removeComponent()
 		{
-			m_world->removeComponent<T>(m_handleInfo->entity);
+			m_details->world->removeComponent<T>(m_details->entity);
 		}
 
 		template <typename T>
 		bool hasComponent() const
 		{
-			return m_world->hasComponent<T>(m_handleInfo->entity);
+			return m_details->world->hasComponent<T>(m_details->entity);
 		}
 
 		/**
@@ -71,7 +69,7 @@ namespace aeyon
 		template <typename T>
 		ComponentHandle<T> getComponent() const
 		{
-			return m_world->getComponent<T>(m_handleInfo->entity);
+			return m_details->world->getComponent<T>(m_details->entity);
 		}
 	};
 }

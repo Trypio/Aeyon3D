@@ -134,7 +134,7 @@ namespace aeyon
 	{
 		if (m_parent)
 		{
-			setScale(m_scale * scale);
+			setScale(m_parent->getScale() * scale);
 		}
 		else
 		{
@@ -272,11 +272,14 @@ namespace aeyon
 
 	void Transform::setParent(Transform* parent)
 	{
-		if (m_parent && m_parent != parent)
+		if (m_parent != parent)
 		{
-			auto& oldParentChildren = m_parent->m_children;
-			oldParentChildren.erase(std::remove(oldParentChildren.begin(), oldParentChildren.end(), this),
-															oldParentChildren.end());
+			if (m_parent)
+			{
+				auto& oldParentChildren = m_parent->m_children;
+				oldParentChildren.erase(std::remove(oldParentChildren.begin(), oldParentChildren.end(), this),
+																oldParentChildren.end());
+			}
 
 			m_parent = parent;
 

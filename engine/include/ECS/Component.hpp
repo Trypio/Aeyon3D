@@ -16,7 +16,7 @@ namespace aeyon
 	};
 
 	/**
-	 * Adds a unique component type id trait to the derived class
+	 * Adds a unique component type ID trait to the deriving class
 	 */
 	template <typename T>
 	struct Component
@@ -30,6 +30,9 @@ namespace aeyon
 		}
 	};
 
+	/**
+	 * Returns the unique ID of the Component with the given type T
+	 */
 	template <typename T>
 	static std::size_t GetComponentTypeID()
 	{

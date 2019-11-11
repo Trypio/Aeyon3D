@@ -4,23 +4,22 @@
 
 #ifndef AEYON3D_ENGINE_HPP
 #define AEYON3D_ENGINE_HPP
-#include "ECS/World.hpp"
-#include "Window.hpp"
-#include "Input/Input.hpp"
-#include "ResourceCache.hpp"
-#include "Graphics/Texture.hpp"
-#include "Graphics/Shader.hpp"
-#include "Graphics/Material.hpp"
-#include "Graphics/Mesh.hpp"
-#include "Graphics/GraphicsSystem.hpp"
-#include "Audio/AudioClip.hpp"
+
 #include <memory>
 #include "TextureCache.hpp"
 #include "ShaderCache.hpp"
+#include "ECS/EntityHandle.hpp"
+#include "Graphics/Material.hpp"
+#include "Graphics/GraphicsSystem.hpp"
+#include "Input/Input.hpp"
+#include "Window.hpp"
+#include "ECS/World.hpp"
+
+class aiNode;
+class aiScene;
 
 namespace aeyon
 {
-
 	class Engine
 	{
 	protected:
@@ -45,6 +44,8 @@ namespace aeyon
 		virtual void lateUpdate();
 
 		void run();
+		EntityHandle loadModel(const std::string& path, Resource<Material> material);
+		void processNode(const aiScene* scene, const aiNode* node, EntityHandle entity, Resource<Material> material);
 	};
 }
 

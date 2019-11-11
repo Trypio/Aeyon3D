@@ -5,6 +5,7 @@
 #include "Graphics/Mesh.hpp"
 #include <algorithm>
 #include <cstring>
+#include <Util.hpp>
 
 
 namespace aeyon
@@ -14,6 +15,7 @@ namespace aeyon
 				m_vertexFormat(vertexFormat),
 				m_needsUpdate(true)
 	{
+		setSubMeshCount(1);
 	}
 
   std::vector<VertexAttribute> Mesh::getVertexAttributesFromFormat(VertexFormat format)
@@ -65,29 +67,6 @@ namespace aeyon
   {
     return m_indexBuffer;
   }
-
-	void Mesh::setMaterial(Resource<Material> material)
-	{
-		if (m_materials.empty())
-			m_materials.push_back(std::move(material));
-		else
-      m_materials[0] = std::move(material);
-	}
-
-	void Mesh::setMaterials(std::vector<Resource<Material>> materials)
-  {
-	  m_materials = std::move(materials);
-  }
-
-	Resource<Material> Mesh::getMaterial() const
-	{
-		return m_materials.at(0);
-	}
-
-	const std::vector<Resource<Material>>& Mesh::getMaterials() const
-	{
-		return m_materials;
-	}
 
 	const VertexFormat& Mesh::getVertexFormat() const
 	{
@@ -170,13 +149,16 @@ namespace aeyon
 
     m_vertexBuffer.write(vertexBufferData.data(), vertexBufferData.size(), 0);
 
+		// TODO: Copy data directly into buffer without creating a flattened list first
 
-		if (m_triangles.size() * sizeof(TIndex) != m_indexBuffer.getSize())
+		auto allTriangles = util::flatten(m_triangles);
+
+		if (allTriangles.size() * sizeof(TIndex) != m_indexBuffer.getSize())
 		{
-			m_indexBuffer.reset(m_triangles.size() * sizeof(TIndex));
+			m_indexBuffer.reset(allTriangles.size() * sizeof(TIndex));
 		}
 
-    m_indexBuffer.write(m_triangles.data(), m_triangles.size() * sizeof(TIndex), 0);
+    m_indexBuffer.write(allTriangles.data(), allTriangles.size() * sizeof(TIndex), 0);
 		
 		m_needsUpdate = false;
 	}
@@ -189,23 +171,27 @@ namespace aeyon
 
 		glm::vec3 p0, p1, p2, n;
 
-			for (std::size_t i = 0; i < m_triangles.size(); i += 3)
+		for (const auto& triangles : m_triangles)
+		{
+			for (std::size_t i = 0; i < triangles.size(); i += 3)
 			{
-				p0 = m_positions[m_triangles[i]];
-				p1 = m_positions[m_triangles[i + 1]];
-				p2 = m_positions[m_triangles[i + 2]];
+				p0 = m_positions[triangles[i]];
+				p1 = m_positions[triangles[i + 1]];
+				p2 = m_positions[triangles[i + 2]];
 
 				n = glm::normalize(glm::cross(p2 - p0, p1 - p0));
 
-				m_normals[m_triangles[i]] += n;
-				m_normals[m_triangles[i + 1]] += n;
-				m_normals[m_triangles[i + 2]] += n;
+				m_normals[triangles[i]] += n;
+				m_normals[triangles[i + 1]] += n;
+				m_normals[triangles[i + 2]] += n;
 			}
 
 			for (auto& normal : m_normals)
 			{
 				normal = glm::normalize(normal);
 			}
+		}
+
 
 			m_needsUpdate = true;
 	}
@@ -215,34 +201,37 @@ namespace aeyon
 		m_tangents.resize(m_positions.size());
 		m_bitangents.resize(m_positions.size());
 
-		for (std::size_t i = 0; i < m_triangles.size(); i += 3)
+		for (const auto& triangles : m_triangles)
 		{
-			glm::vec3& v0 = m_positions[m_triangles[i]];
-			glm::vec3& v1 = m_positions[m_triangles[i + 1]];
-			glm::vec3& v2 = m_positions[m_triangles[i + 2]];
+			for (std::size_t i = 0; i < triangles.size(); i += 3)
+			{
+				glm::vec3& v0 = m_positions[triangles[i]];
+				glm::vec3& v1 = m_positions[triangles[i + 1]];
+				glm::vec3& v2 = m_positions[triangles[i + 2]];
 
-			glm::vec2& uv0 = m_uvs[m_triangles[i]];
-			glm::vec2& uv1 = m_uvs[m_triangles[i + 1]];
-			glm::vec2& uv2 = m_uvs[m_triangles[i + 2]];
+				glm::vec2& uv0 = m_uvs[triangles[i]];
+				glm::vec2& uv1 = m_uvs[triangles[i + 1]];
+				glm::vec2& uv2 = m_uvs[triangles[i + 2]];
 
-			glm::vec3 deltaPos1 = v1 - v0;
-			glm::vec3 deltaPos2 = v2 - v0;
+				glm::vec3 deltaPos1 = v1 - v0;
+				glm::vec3 deltaPos2 = v2 - v0;
 
-			glm::vec2 deltaUV1 = uv1 - uv0;
-			glm::vec2 deltaUV2 = uv2 - uv0;
+				glm::vec2 deltaUV1 = uv1 - uv0;
+				glm::vec2 deltaUV2 = uv2 - uv0;
 
 
-			float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-			glm::vec3 tangent = glm::normalize(f * (deltaUV2.y * deltaPos1 - deltaUV1.y * deltaPos2));
-			glm::vec3 bitangent = glm::normalize(f * (-deltaUV2.x * deltaPos1 + deltaUV1.x * deltaPos2));
+				float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+				glm::vec3 tangent = glm::normalize(f * (deltaUV2.y * deltaPos1 - deltaUV1.y * deltaPos2));
+				glm::vec3 bitangent = glm::normalize(f * (-deltaUV2.x * deltaPos1 + deltaUV1.x * deltaPos2));
 
-			m_tangents[m_triangles[i]] = tangent;
-			m_tangents[m_triangles[i + 1]] = tangent;
-			m_tangents[m_triangles[i + 2]] = tangent;
+				m_tangents[triangles[i]] = tangent;
+				m_tangents[triangles[i + 1]] = tangent;
+				m_tangents[triangles[i + 2]] = tangent;
 
-			m_bitangents[m_triangles[i]] = bitangent;
-			m_bitangents[m_triangles[i + 1]] = bitangent;
-			m_bitangents[m_triangles[i + 2]] = bitangent;
+				m_bitangents[triangles[i]] = bitangent;
+				m_bitangents[triangles[i + 1]] = bitangent;
+				m_bitangents[triangles[i + 2]] = bitangent;
+			}
 		}
 
 		m_needsUpdate = true;
@@ -338,9 +327,9 @@ namespace aeyon
     m_needsUpdate = true;
   }
   
-  void Mesh::setTriangles(std::vector<TIndex> indices)
+  void Mesh::setTriangles(std::vector<TIndex> indices, std::size_t submesh)
   {
-    m_triangles = std::move(indices);
+    m_triangles.at(submesh) = std::move(indices);
     m_needsUpdate = true;
   }
   
@@ -406,8 +395,29 @@ namespace aeyon
 		return m_bitangents;
 	}
 
-	const std::vector<TIndex>& Mesh::getTriangles() const
+	void Mesh::setSubMeshCount(std::size_t count)
 	{
-		return m_triangles;
+		m_triangles.resize(count);
+	}
+
+	const std::vector<TIndex>& Mesh::getTriangles(std::size_t submesh) const
+	{
+		return m_triangles.at(submesh);
+	}
+
+	std::size_t Mesh::getSubMeshCount() const
+	{
+		return m_triangles.size();
+	}
+
+	unsigned int Mesh::getSubMeshOffset(std::size_t submesh) const
+	{
+		unsigned int offset = 0;
+		for (std::size_t i = 0; i < submesh; i++)
+		{
+			offset += m_triangles.at(i).size();
+		}
+
+		return offset;
 	}
 }

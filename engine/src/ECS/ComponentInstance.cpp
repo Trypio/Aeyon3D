@@ -23,11 +23,6 @@ namespace aeyon
 		return m_id != InvalidID;
 	}
 
-	bool ComponentInstance::operator!() const
-	{
-		return m_id == InvalidID;
-	}
-
 	bool operator==(const ComponentInstance& lhs, const ComponentInstance& rhs)
 	{
 		return lhs.m_id == rhs.m_id;

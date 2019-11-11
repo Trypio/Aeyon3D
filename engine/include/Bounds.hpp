@@ -25,11 +25,15 @@ namespace aeyon
 		Bounds(const glm::vec3& center, const glm::vec3& size);
 
 		bool contains(const glm::vec3& point) const;
-		void expand(const glm::vec3& amount);
+		bool contains(const Bounds& bounds) const;
+
 		bool intersects(const Bounds& bounds) const;
+
+		void expand(const glm::vec3& amount);
 		void encompass(const glm::vec3& point);
 		void encompass(const Bounds& bounds);
-		Bounds getBoundsOfTransformation(const glm::mat4& matrix) const;
+
+		std::vector<glm::vec3> getVertices() const;
 
 		glm::vec3 getMin() const;
 		glm::vec3 getMax() const;

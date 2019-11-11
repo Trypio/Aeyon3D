@@ -6,6 +6,7 @@
 #include "FirstPersonController.hpp"
 #include "Time.hpp"
 #include "Graphics/Material.hpp"
+#include "Input/Input.hpp"
 
 using namespace aeyon;
 
@@ -61,33 +62,33 @@ public:
 
 		auto skyboxEntity = Primitive::createCube(m_world.get(), false, false);
 		skyboxEntity.removeComponent<BoxCollider>();
-		auto skyBoxMesh = skyboxEntity.getComponent<MeshRenderer>()->getSharedMesh();
-		auto positions = skyBoxMesh->getPositions();
+		auto skyBoxMesh = skyboxEntity.getComponent<MeshRenderer>();
+		auto positions = skyBoxMesh->getMesh()->getPositions();
 		std::for_each(positions.begin(), positions.end(), [](glm::vec3& v) { v *= 2.0f; });
-		skyBoxMesh->setPositions(std::move(positions));
+		skyBoxMesh->getMesh()->setPositions(std::move(positions));
     skyBoxMesh->setMaterial(skyBoxMaterial);
-		skyBoxMesh->apply();
+		skyBoxMesh->getMesh()->apply();
 
 		m_graphics->setSkybox(skyboxEntity);
 
-		auto cube1 = Primitive::createCube(m_world.get());
-		cubeTransform1 = cube1.getComponent<Transform>();
-		cubeTransform1->setPosition({0.5f, 0.5f, 0.5f});
-		auto cubeMesh1 = cube1.getComponent<MeshRenderer>()->getSharedMesh();
-    cubeMesh1->setMaterial(cubeMaterial);
-
-		auto cube2 = Primitive::createCube(m_world.get());
-		cubeTransform2 = cube2.getComponent<Transform>();
-		cubeTransform2->setPosition({2.0f, 0.5f, 0.0f});
-		auto cubeMesh2 = cube2.getComponent<MeshRenderer>()->getSharedMesh();
-    cubeMesh2->setMaterial(cubeMaterial);
+//		auto cube1 = Primitive::createCube(m_world.get());
+//		cubeTransform1 = cube1.getComponent<Transform>();
+//		cubeTransform1->setPosition({0.5f, 0.5f, 0.5f});
+//		auto cubeMesh1 = cube1.getComponent<MeshRenderer>();
+//    cubeMesh1->setMaterial(cubeMaterial);
+//
+//		auto cube2 = Primitive::createCube(m_world.get());
+//		cubeTransform2 = cube2.getComponent<Transform>();
+//		cubeTransform2->setPosition({2.0f, 0.5f, 0.0f});
+//		auto cubeMesh2 = cube2.getComponent<MeshRenderer>();
+//    cubeMesh2->setMaterial(cubeMaterial);
 
 
 
 		auto ground = Primitive::createPlane(m_world.get());
 		auto groundTransform = ground.getComponent<Transform>();
 		groundTransform->setScale({50.0f, 0.1f, 50.0f});
-		auto groundMesh = ground.getComponent<MeshRenderer>()->getSharedMesh();
+		auto groundMesh = ground.getComponent<MeshRenderer>();
 		groundMaterial->setTextureScale({50.0f, 50.0f});
     groundMesh->setMaterial(groundMaterial);
 
@@ -106,6 +107,10 @@ public:
 		controller->m_mouseSensitivity = 0.1f;
 
 		cameraTransform->translate({0.0f, 0.5f, -2.0f});
+
+
+		auto model = loadModel("assets/models/nanosuit/nanosuit.obj", cubeMaterial);
+		model.getComponent<Transform>()->setScale(glm::vec3(0.1f));
 	}
 
 	void update() override

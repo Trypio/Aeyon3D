@@ -29,7 +29,6 @@ namespace aeyon
 		explicit Entity(ID id = InvalidID);
 
 		explicit operator bool() const;
-		bool operator!() const;
 
 		friend bool operator==(const Entity& e1, const Entity& e2);
 		friend bool operator!=(const Entity& e1, const Entity& e2);

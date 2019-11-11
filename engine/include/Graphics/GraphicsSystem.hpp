@@ -7,12 +7,10 @@
 
 #include "ECS/System.hpp"
 #include "glad/glad.h"
-#include "Scene.hpp"
 #include "Graphics/Texture.hpp"
 #include "ECS/EntityHandle.hpp"
 #include "Resource.hpp"
 #include "Graphics/Frustum.hpp"
-
 
 namespace aeyon
 {
@@ -20,8 +18,8 @@ namespace aeyon
 	class Mesh;
 	class Light;
 	class Material;
-	class Window;
 	class Transform;
+	class SDLWindow;
 
 	class GraphicsSystem : public System
 	{
@@ -33,6 +31,7 @@ namespace aeyon
 			std::vector<GLuint> ebos;
 			std::vector<ComponentHandle<Transform>> transforms;
 			std::vector<GLsizei> numTriangles;
+			std::vector<GLint> offsets;
 		};
 
 		struct CameraInfo
@@ -50,13 +49,13 @@ namespace aeyon
 		const int ShadowTexWidth = 2048;
 		const int ShadowTexHeight = 2048;
 
-		Window* m_window;
+		SDLWindow* m_window;
 		EntityHandle m_skyBox;
 
 		std::vector<EntityHandle> m_lights;
 		std::vector<CameraInfo> m_cameras;
 		std::unordered_map<Material*, Batch> m_batches;
-		Scene m_scene;
+		std::vector<EntityHandle> m_scene;
 
 		Resource<Texture> m_shadowMap;
 		GLuint m_shadowFBO;
@@ -68,15 +67,17 @@ namespace aeyon
 		void bindMaterial(Resource<Material>& material);
 
 	public:
-		explicit GraphicsSystem(Window* window);
+		explicit GraphicsSystem(SDLWindow* window);
 		~GraphicsSystem() override;
 
 		void setSkybox(EntityHandle skybox);
 
+		SDLWindow* getWindow();
+
 		void init() override;
 		void update() override;
 
-		void render(Scene& scene);
+		void render();
 	};
 }
 

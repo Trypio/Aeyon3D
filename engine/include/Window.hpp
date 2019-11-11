@@ -12,8 +12,6 @@ namespace aeyon
 	class Window
 	{
 	public:
-		using ProcAddress = void*(*)(const char*);
-
 		virtual ~Window() = default;
 
 		virtual void show() = 0;
@@ -43,12 +41,10 @@ namespace aeyon
 		virtual void maximize() = 0;
 		virtual void restore() = 0;
 
-		virtual void makeContextCurrent() = 0;
 		virtual int getViewportWidth() const = 0;
 		virtual int getViewportHeight() const = 0;
 		virtual void setSwapInterval(int interval) = 0;
 		virtual int getSwapInterval() const = 0;
-		virtual ProcAddress getProcAddress() const = 0;
 	};
 }
 

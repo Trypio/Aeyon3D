@@ -80,7 +80,7 @@ namespace aeyon
 		void removeEntityFromSystems(const Entity& entity, std::size_t typeID, const Signature& oldMask);
 
 	public:
-		World() = default;
+		World();
 		World(const World&) = delete;
 		World& operator=(const World&) = delete;
 
@@ -133,7 +133,7 @@ namespace aeyon
 		{
 			auto store = getComponentStore<T>();
 			auto componentInfo = store->createComponent(std::forward<P>(parameters)...);
-			componentInfo->entity = entity;
+			componentInfo->owner = entity;
 
 			m_entityMaps[GetComponentTypeID<T>()].insert(entity, componentInfo->instance);
 			Signature oldMask = m_entityMasks.at(entity);
@@ -168,10 +168,9 @@ namespace aeyon
 		ComponentHandle<T> getComponent(const Entity& entity) const
 		{
 			auto store = getComponentStore<T>();
-			// TODO: Can't we draw a copy from the original handle?
 			auto id = GetComponentTypeID<T>();
 			auto instance = m_entityMaps[id].getInstance(entity);
-			return ComponentHandle<T>(store->getComponentHandleInfo(m_entityMaps[GetComponentTypeID<T>()].getInstance(entity)));
+			return ComponentHandle<T>(store->getComponentHandleDetails(instance));
 		}
 	};
 }

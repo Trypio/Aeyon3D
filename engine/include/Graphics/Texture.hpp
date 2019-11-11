@@ -80,7 +80,7 @@ namespace aeyon
 
 		~Texture();
 
-		GLuint getGLHandle() const;
+		GLuint getNativeHandle() const;
 
 		void apply(bool releaseMemory = false);
 

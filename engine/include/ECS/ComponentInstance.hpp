@@ -30,7 +30,6 @@ namespace aeyon
 		explicit ComponentInstance(ID id = InvalidID);
 
 		explicit operator bool() const;
-		bool operator!() const;
 
 		friend bool operator==(const ComponentInstance& e1, const ComponentInstance& e2);
 		friend bool operator!=(const ComponentInstance& e1, const ComponentInstance& e2);

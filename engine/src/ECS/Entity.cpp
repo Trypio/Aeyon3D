@@ -23,11 +23,6 @@ namespace aeyon
 		return m_id != InvalidID;
 	}
 
-	bool Entity::operator!() const
-	{
-		return !*this;
-	}
-
 	bool operator==(const Entity& lhs, const Entity& rhs)
 	{
 		return lhs.m_id == rhs.m_id;

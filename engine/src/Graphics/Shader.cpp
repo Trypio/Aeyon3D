@@ -34,7 +34,7 @@ namespace aeyon
 		m_properties["_P"] = {"_P", "mat4", 3, 1};
 		m_properties["_VP"] = {"_VP", "mat4", 4, 1};
 		m_properties["_MVP"] = {"_MVP", "mat4", 5, 1};
-		m_properties["_MV_T_Inv"] = {"_MV_T_Inv", "mat4", 6, 1};
+		m_properties["_MV_Inv_T"] = {"_MV_Inv_T", "mat4", 6, 1};
 		m_properties["_AmbientColor"] = {"_AmbientColor", "vec4", 7, 1};
 		m_properties["_LightPosition"] = {"_LightPosition", "vec4", 8, 8};
 		m_properties["_LightColor"] = {"_LightColor", "vec4", 16, 8};

@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.8)
 project(Aeyon3D LANGUAGES C CXX)
 
 set (CMAKE_CXX_STANDARD 17)
@@ -10,6 +11,7 @@ set(SOURCE_FILES
         src/ECS/EntityStore.cpp
         src/ECS/System.cpp
         src/ECS/World.cpp
+        src/ECS/EntityHandleDetails.cpp
         src/Event/Event.cpp
         src/Event/EventSystem.cpp
         src/Input/SDLInput.cpp
@@ -17,6 +19,7 @@ set(SOURCE_FILES
         src/Plane.cpp
         src/Graphics/Frustum.cpp
         src/Graphics/IndexBuffer.cpp
+        src/Graphics/FrameBuffer.cpp
         src/Graphics/VertexBuffer.cpp
         src/BoxCollider.cpp
         src/Camera.cpp
@@ -39,14 +42,18 @@ set(SOURCE_FILES
         src/ECS/ECSException.cpp
         src/Graphics/ShaderParser.cpp
         src/Graphics/PixelFormat.cpp
-        src/Graphics/PropertyVisitor.cpp)
+        src/Graphics/PropertyVisitor.cpp
+        src/Graphics/Texture2D.cpp)
 
 find_package(OpenGL REQUIRED)
-find_package(glm 0.9.8 REQUIRED)
 find_package(SDL2 REQUIRED)
+find_package(glm 0.9.8 REQUIRED)
+find_package(assimp REQUIRED)
 
-set(INCLUDE_DIRS_PUBLIC include ${SDL2_INCLUDE_DIRS})
-set(LINK_LIBS_PUBLIC glad stb_vorbis stb_image pugixml ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY})
+#find_library(ASSIMP_LIBRARY NAMES ${ASSIMP_LIBRARIES} PATH ${ASSIMP_LIBRARY_DIRS})
+
+set(INCLUDE_DIRS_PUBLIC include ${SDL2_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS})
+set(LINK_LIBS_PUBLIC glad stb_vorbis stb_image pugixml imgui ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${ASSIMP_LIBRARIES})
 
 if(${USE_LUA})
     find_package(Lua 5.3 REQUIRED)

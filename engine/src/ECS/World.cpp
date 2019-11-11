@@ -50,7 +50,7 @@ namespace aeyon
 
 		m_entityMasks[infoPtr->entity] = Signature();
 
-		return EntityHandle(infoPtr, this);
+		return EntityHandle(infoPtr);
 	}
 
 	void World::destroyEntity(const Entity& entity)
@@ -74,7 +74,7 @@ namespace aeyon
 		{
 			if ((system->getSignatureAND() & ~p.second).none() || (system->getSignatureOR() & p.second).any())
 			{
-				system->registerEntity(EntityHandle(m_entityStore.getEntityHandleInfo(p.first), this));
+				system->registerEntity(EntityHandle(m_entityStore.getEntityHandleInfo(p.first)));
 			}
 		}
 
@@ -94,7 +94,7 @@ namespace aeyon
 					if ((oldMask & system->getSignatureOR()).none() && (oldMask & system->getSignatureAND()) != system->getSignatureAND())
 					{
 						auto infoPtr = m_entityStore.getEntityHandleInfo(entity);
-						system->registerEntity(EntityHandle(infoPtr, this));
+						system->registerEntity(EntityHandle(infoPtr));
 					}
 				}
 				else if (system->getSignatureAND().test(typeID))
@@ -106,7 +106,7 @@ namespace aeyon
 					if ((new_mask & system->getSignatureAND()) == system->getSignatureAND() && (oldMask & system->getSignatureAND()) != system->getSignatureAND() && (oldMask & system->getSignatureOR()).none())
 					{
 						auto infoPtr = m_entityStore.getEntityHandleInfo(entity);
-						system->registerEntity(EntityHandle(infoPtr, this));
+						system->registerEntity(EntityHandle(infoPtr));
 					}
 				}
 			}
@@ -141,6 +141,12 @@ namespace aeyon
 				}
 			}
 		}
+	}
+
+	World::World()
+	: m_entityStore(this)
+	{
+
 	}
 }
 

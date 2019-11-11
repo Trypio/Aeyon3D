@@ -6,7 +6,7 @@
 #define AEYON3D_ENTITYSTORE_HPP
 
 #include "Entity.hpp"
-#include "EntityHandleInfo.hpp"
+#include "EntityHandleDetails.hpp"
 #include <queue>
 #include <memory>
 
@@ -23,13 +23,17 @@ namespace aeyon
 		 */
 		Entity::ID m_entityCounter = 1;
 		std::queue<Entity::ID> m_unusedIDs;
-		std::unordered_map<Entity, std::shared_ptr<EntityHandleInfo>> m_handles;
+		std::unordered_map<Entity, std::shared_ptr<EntityHandleDetails>> m_handles;
+
+		World* m_world;
 
 	public:
+		explicit EntityStore(World* world);
+
 		/**
 		 * Returns a new valid entity
 		 */
-		std::shared_ptr<EntityHandleInfo> createEntity();
+		std::shared_ptr<EntityHandleDetails> createEntity();
 
 		/**
 		 * Marks the given entity as invalid.
@@ -44,7 +48,9 @@ namespace aeyon
 		 * Get the info currently associated with the given entity
 		 *
 		 */
-		std::shared_ptr<EntityHandleInfo> getEntityHandleInfo(const Entity& entity) const;
+		std::shared_ptr<EntityHandleDetails> getEntityHandleInfo(const Entity& entity) const;
+
+		World* getWorld();
 	};
 }
 

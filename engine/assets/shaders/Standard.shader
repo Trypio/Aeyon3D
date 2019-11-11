@@ -36,9 +36,9 @@ void main()
 {
     vtx.world_pos = _M * in_position; ;
     vtx.uv = in_uv * _TextureScale + _TextureOffset;
-    vec3 T = normalize(mat3(_MV_T_Inv) * in_tangent);
-    vec3 B = normalize(mat3(_MV_T_Inv) * in_bitangent);
-    vec3 N = normalize(mat3(_MV_T_Inv) * in_normal);
+    vec3 T = normalize(mat3(_MV_Inv_T) * in_tangent);
+    vec3 B = normalize(mat3(_MV_Inv_T) * in_bitangent);
+    vec3 N = normalize(mat3(_MV_Inv_T) * in_normal);
     vtx.TBN = mat3(T, B, N);
     vtx.light_space_pos = _WorldToLight * vtx.world_pos;
 
@@ -69,7 +69,7 @@ float calcDirectionalShadow(vec4 light_dir, vec4 normal)
     float closest_depth = texture(shadow_map, shadow_proj_coords.xy).r; // overridden when PCF is enabled
     float current_depth = shadow_proj_coords.z;
 
-    float bias = 0.005;
+    float bias = 0.001;
     float shadow = 0.0;
 
     // PCF

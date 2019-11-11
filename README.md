@@ -3,10 +3,10 @@
 ## Description
 
 Aeyon3D is a 3D game engine written in C++17. I've been occasionally working on it since 2018 and it currently comprises several 
-subsystems that are managed by a custom Entity Component System (ECS)
+subsystems which are managed by a custom Entity Component System (ECS)
 architecture.
 
-## Features (Implemented)
+## Features
 * **Rendering System** based on OpenGL 3.3
     - Blinn-Phong Shading
     - Normal Mapping
@@ -18,8 +18,9 @@ architecture.
 * **Entity Component System**
 * **Cross-Platform Input**
 
-## Features (Planned)
+## Upcoming
 * Model Importing
+* Basic GUI
 * Displacement Mapping
 * Reflections (Screen Space, Planar, Environment Mapping)
 * HDR rendering + Bloom
@@ -36,9 +37,11 @@ architecture.
 
 ## Libraries
 - SDL2 (https://www.libsdl.org/)
-- OpenGL (https://www.opengl.org/)
+- OpenGL 3.3 (https://www.opengl.org/)
 - Glad (https://glad.dav1d.de/)
-- GLM (https://glm.g-truc.net/0.9.8/index.html)
+- GLM 0.9.8 (https://glm.g-truc.net/0.9.8/index.html)
+- Assimp (http://www.assimp.org/)
+- Dear ImGui (https://github.com/ocornut/imgui)
 - pugixml (https://pugixml.org/)
 - stb_image, stb_vorbis (https://github.com/nothings/stb)
 - Lua (https://www.lua.org/)
@@ -48,3 +51,4 @@ architecture.
 - Textures:
     - https://cc0textures.com/
     - https://learnopengl.com/
+    - https://sketchfab.com/

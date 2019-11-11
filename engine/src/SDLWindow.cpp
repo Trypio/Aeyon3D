@@ -156,7 +156,7 @@ namespace aeyon
 		SDL_RestoreWindow(m_sdlWindow.get());
 	}
 
-	Window::ProcAddress SDLWindow::getProcAddress() const 
+	SDLWindow::ProcAddress SDLWindow::getProcAddress() const
 	{
 		return SDL_GL_GetProcAddress;
 	}
@@ -190,5 +190,10 @@ namespace aeyon
 	int SDLWindow::getSwapInterval() const 
 	{
 		return SDL_GL_GetSwapInterval();
+	}
+
+	SDL_GLContext SDLWindow::getGLContext() const
+	{
+		return m_glContext;
 	}
 }

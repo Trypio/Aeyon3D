@@ -8,12 +8,11 @@
 #include <vector>
 #include <memory>
 #include <glm/glm.hpp>
-#include "Material.hpp"
 #include "Bounds.hpp"
-#include "Resource.hpp"
 #include "Types.hpp"
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
+#include "Color.hpp"
 
 namespace aeyon
 {
@@ -26,9 +25,7 @@ namespace aeyon
 		std::vector<glm::vec2> m_uvs;
 		std::vector<glm::vec3> m_tangents;
 		std::vector<glm::vec3> m_bitangents;
-		std::vector<TIndex> m_triangles;
-
-		std::vector<Resource<Material>> m_materials;
+		std::vector<std::vector<TIndex>> m_triangles;
 
 		VertexBuffer m_vertexBuffer;
 		IndexBuffer m_indexBuffer;
@@ -45,12 +42,6 @@ namespace aeyon
 		VertexBuffer& getVertexBuffer();
 		IndexBuffer& getIndexBuffer();
 
-		void setMaterial(Resource<Material> material);
-		void setMaterials(std::vector<Resource<Material>> materials);
-
-		Resource<Material> getMaterial() const;
-		const std::vector<Resource<Material>>& getMaterials() const;
-
 		const VertexFormat& getVertexFormat() const;
 
 		bool needsUpdate() const;
@@ -61,6 +52,10 @@ namespace aeyon
 		void clear();
 
 		Bounds getBounds() const;
+
+		void setSubMeshCount(std::size_t count);
+		std::size_t getSubMeshCount() const;
+		unsigned int getSubMeshOffset(std::size_t submesh) const;
 
 		void setPosition(std::size_t index, glm::vec3 position);
 		void setNormal(std::size_t index, glm::vec3 normal);
@@ -75,7 +70,7 @@ namespace aeyon
 		void setUVs(std::vector<glm::vec2> uvs);
 		void setTangents(std::vector<glm::vec3> tangents);
 		void setBitangents(std::vector<glm::vec3> bitangents);
-		void setTriangles(std::vector<TIndex> indices);
+		void setTriangles(std::vector<TIndex> indices, std::size_t submesh = 0);
 
 		const glm::vec3& getPosition(std::size_t index) const;
 		const glm::vec3& getNormal(std::size_t index) const;
@@ -90,7 +85,7 @@ namespace aeyon
 		const std::vector<glm::vec2>& getUVs() const;
 		const std::vector<glm::vec3>& getTangents() const;
 		const std::vector<glm::vec3>& getBitangents() const;
-		const std::vector<TIndex>& getTriangles() const;
+		const std::vector<TIndex>& getTriangles(std::size_t submesh = 0) const;
 	};
 }
 

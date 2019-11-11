@@ -17,6 +17,7 @@
 #include "stb_vorbis.h"
 #include "Audio/AudioClip.hpp"
 #include <iostream>
+#include "Graphics/Shader.hpp"
 
 namespace aeyon
 {

@@ -7,7 +7,6 @@
 #include "Camera.hpp"
 #include "glad/glad.h"
 #include "Event/QuitEvent.hpp"
-#include "Window.hpp"
 #include "Graphics/Texture.hpp"
 #include "Graphics/Mesh.hpp"
 #include "Graphics/MeshRenderer.hpp"
@@ -18,18 +17,50 @@
 #include "Graphics/PropertyVisitor.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+#include <iostream>
+#include "SDLWindow.hpp"
+
 
 
 namespace aeyon
 {
-	GraphicsSystem::GraphicsSystem(Window* window):  m_window(window),
-	m_shadowMap(std::make_shared<ResourceData<Texture>>("ShadowMap", std::make_unique<Texture>(Texture::Type::Tex2D, PixelFormat::Depth, ShadowTexWidth, ShadowTexHeight))),
-	m_shadowFBO(0)
+	void APIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+																const GLchar* message, const void* userParam)
+	{
+		if (type == GL_DEBUG_TYPE_ERROR_ARB)
+			throw std::runtime_error(message);
+	}
+
+	GraphicsSystem::GraphicsSystem(SDLWindow* window)
+	: m_window(window), m_shadowFBO(0)
 	{
 		requireComponent<Transform>();
 		acceptComponent<MeshRenderer>();
 		acceptComponent<Light>();
 		acceptComponent<Camera>();
+
+		m_window->makeContextCurrent();
+		gladLoadGLLoader(m_window->getProcAddress());
+
+		if (GLAD_GL_ARB_debug_output)
+		{
+			glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+			glDebugMessageCallbackARB(glDebugCallback, nullptr);
+
+			std::cout << "OpenGL Debug Context initialized" << std::endl;
+		}
+		else
+		{
+			std::cout << "ARB_debug_output is not supported on this system" << std::endl;
+		}
+
+
+
+
+		// Load shadow map texture target and buffers
+
+		m_shadowMap = Resource<Texture>(std::make_shared<ResourceData<Texture>>("ShadowMap", std::make_unique<Texture>(Texture::Type::Tex2D, PixelFormat::Depth, ShadowTexWidth, ShadowTexHeight)));
 
 		glGenFramebuffers(1, &m_shadowFBO);
 
@@ -45,7 +76,7 @@ namespace aeyon
 				GL_FRAMEBUFFER,
 				GL_DEPTH_ATTACHMENT,
 				GL_TEXTURE_2D,
-				m_shadowMap->getGLHandle(),
+				m_shadowMap->getNativeHandle(),
 				0
 		);
 		glDrawBuffer(GL_NONE);
@@ -83,18 +114,17 @@ namespace aeyon
 	void GraphicsSystem::update()
 	{
 		// TODO: Setup temporary scene till I have implemented the world's scene graph
-		Scene scene;
+		m_scene.clear();
 		for (const auto& entity : getEntities())
 		{
-			scene.addEntity(entity);
+			m_scene.push_back(entity);
 		}
 
-		render(scene);
+		render();
 	}
 
-	void GraphicsSystem::render(Scene& scene)
+	void GraphicsSystem::render()
 	{
-		m_scene = scene;
 		m_cameras.clear();
 		m_lights.clear();
 		m_batches.clear();
@@ -121,11 +151,11 @@ namespace aeyon
 		glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-		glCullFace(GL_FRONT);
+		//glCullFace(GL_FRONT);
 
 		renderVAOs(1);
 
-		glCullFace(GL_BACK);
+		//glCullFace(GL_BACK);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -150,15 +180,16 @@ namespace aeyon
 		{
 			m_batches.clear();
 
-			auto skyBoxMesh = m_skyBox.getComponent<MeshRenderer>()->getSharedMesh();
+			auto skyBoxMesh = m_skyBox.getComponent<MeshRenderer>();
 
 			Batch& b = m_batches[skyBoxMesh->getMaterial().get()];
 
 			b.material = skyBoxMesh->getMaterial();
-			b.vaos.push_back(*static_cast<GLuint*>(skyBoxMesh->getVertexBuffer().getNativeHandle()));
-			b.ebos.push_back(*static_cast<GLuint*>(skyBoxMesh->getIndexBuffer().getNativeHandle()));
+			b.vaos.push_back(*static_cast<GLuint*>(skyBoxMesh->getMesh()->getVertexBuffer().getNativeHandle()));
+			b.ebos.push_back(*static_cast<GLuint*>(skyBoxMesh->getMesh()->getIndexBuffer().getNativeHandle()));
 			b.transforms.push_back(m_skyBox.getComponent<Transform>());
-			b.numTriangles.push_back(skyBoxMesh->getTriangles().size());
+			b.numTriangles.push_back(skyBoxMesh->getMesh()->getTriangles().size());
+			b.offsets.push_back(0);
 
 			setCommonShaderProperties();
 
@@ -177,7 +208,7 @@ namespace aeyon
 
 	void GraphicsSystem::generateRenderInfo(const std::string& shaderName)
 	{
-		for (auto& entity : m_scene.getEntities())
+		for (auto& entity : m_scene)
 		{
 			if (entity.hasComponent<Camera>())
 			{
@@ -212,47 +243,46 @@ namespace aeyon
 			}
 		}
 
-		for (auto& entity : m_scene.getEntities())
+		for (auto& entity : m_scene)
 		{
 			if (entity.hasComponent<MeshRenderer>())
 			{
-				auto mesh = entity.getComponent<MeshRenderer>()->getSharedMesh();
+				auto mesh = entity.getComponent<MeshRenderer>();
 
 				//Frustum culling
-				//TODO: Implement OBB test
 				//TODO: Adjust culling for shadow casters
-				Bounds bb = mesh->getBounds();
+				Bounds bb = mesh->getMesh()->getBounds();
 
 				const auto& toWorld = entity.getComponent<Transform>()->getLocalToWorldMatrix();
 
-				std::vector<glm::vec3> vs = {
-						glm::vec3(toWorld * glm::vec4(bb.getMin(), 1.0f)),
-						glm::vec3(toWorld * glm::vec4(bb.getMin() + glm::vec3(bb.getSize().x, 0.0f, 0.0f), 1.0f)),
-						glm::vec3(toWorld * glm::vec4(bb.getMin() + glm::vec3(0.0f, bb.getSize().y, 0.0f), 1.0f)),
-						glm::vec3(toWorld * glm::vec4(bb.getMin() + glm::vec3(0.0f, 0.0f, bb.getSize().z), 1.0f)),
-						glm::vec3(toWorld * glm::vec4(bb.getMax(), 1.0f)),
-						glm::vec3(toWorld * glm::vec4(bb.getMax() - glm::vec3(bb.getSize().x, 0.0f, 0.0f), 1.0f)),
-						glm::vec3(toWorld * glm::vec4(bb.getMax() - glm::vec3(0.0f, bb.getSize().y, 0.0f), 1.0f)),
-						glm::vec3(toWorld * glm::vec4(bb.getMax() - glm::vec3(0.0f, 0.0f, bb.getSize().z), 1.0f))
-				};
+				auto vs = bb.getVertices();
+
+				for (auto& v : vs)
+				{
+					v = toWorld * glm::vec4(v, 1.0f);
+				}
 
 				if (!m_cameras[0].frustum.intersects(vs))
 				{
-					continue;
+					//continue;
 				}
 
-				auto material = mesh->getMaterial();
+				for (std::size_t i = 0; i < mesh->getMesh()->getSubMeshCount(); i++)
+				{
+					auto material = mesh->getMaterials().at(i);
 
-				if (material->getShader()->getName() != shaderName)
-					continue;
+					if (material->getShader()->getName() != shaderName)
+						continue;
 
-				Batch& batch = m_batches[material.get()];
-				batch.material = material;
+					Batch& batch = m_batches[material.get()];
+					batch.material = material;
 
-				batch.vaos.push_back(*static_cast<GLuint*>(mesh->getVertexBuffer().getNativeHandle()));
-				batch.ebos.push_back(*static_cast<GLuint*>(mesh->getIndexBuffer().getNativeHandle()));
-				batch.transforms.push_back(entity.getComponent<Transform>());
-				batch.numTriangles.push_back(mesh->getTriangles().size());
+					batch.vaos.push_back(*static_cast<GLuint*>(mesh->getMesh()->getVertexBuffer().getNativeHandle()));
+					batch.ebos.push_back(*static_cast<GLuint*>(mesh->getMesh()->getIndexBuffer().getNativeHandle()));
+					batch.transforms.push_back(entity.getComponent<Transform>());
+					batch.numTriangles.push_back(mesh->getMesh()->getTriangles(i).size());
+					batch.offsets.push_back(mesh->getMesh()->getSubMeshOffset(i));
+				}
 			}
 
 			if (entity.hasComponent<Light>())
@@ -303,13 +333,55 @@ namespace aeyon
 		// TODO: This currently only works with ONE light. I first need to check if my matrix array implementation is
 		//       correct before creating a proper light matrix array.
 
-		glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.5f, 7.5f);
+		Bounds sceneBounds;
+		for (auto& entity : m_scene)
+		{
+			if (entity.hasComponent<MeshRenderer>())
+			{
+				Bounds objBounds = entity.getComponent<MeshRenderer>()->getMesh()->getBounds();
 
-		glm::mat4 lightView = glm::lookAt(
-				glm::vec3(-1.0f, 2.0f, -3.0f),
-				glm::vec3(0.0f),
+				// Omit plane
+				if (entity.getComponent<Transform>()->getScale().x > 5.0f)
+					continue;
+
+				auto vs = objBounds.getVertices();
+
+				for (auto& v : vs)
+				{
+					v = entity.getComponent<Transform>()->getLocalToWorldMatrix() * glm::vec4(v, 1.0f);
+					sceneBounds.encompass(v);
+				}
+			}
+		}
+
+		glm::mat4 lightView = glm::lookAtLH(
+				sceneBounds.getCenter(),
+				sceneBounds.getCenter() + m_lights[0].getComponent<Transform>()->getForward(),
 				glm::vec3(0.0f, 1.0f, 0.0f)
 		);
+
+
+		Bounds lightBounds;
+		for (auto& v : sceneBounds.getVertices())
+		{
+			lightBounds.encompass(lightView * glm::vec4(v, 1.0f));
+		}
+
+		//glm::mat4 lightProjection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.5f, 7.5f);
+
+		lightBounds.expand(glm::vec3(5.0f));
+
+		glm::mat4 lightProjection = glm::ortho(
+				-lightBounds.getExtents().x,
+				lightBounds.getExtents().x,
+				-lightBounds.getExtents().y,
+				lightBounds.getExtents().y,
+				lightBounds.getExtents().z,
+				-lightBounds.getExtents().z
+		);
+//
+//		std::cout << "{" << sceneBounds.getMin().x << ", " << sceneBounds.getMin().y << ", " << sceneBounds.getMin().z << "}\n";
+//		std::cout << "{" << sceneBounds.getMax().x << ", " << sceneBounds.getMax().y << ", " << sceneBounds.getMax().z << "}\n" << std::endl;
 
 		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
@@ -342,16 +414,27 @@ namespace aeyon
 			for (std::size_t i = 0; i < batch.second.vaos.size(); i++)
 			{
 				auto transform = batch.second.transforms[i];
-				batch.first->setParameter("_M", transform->getLocalToWorldMatrix());
-				batch.first->setParameter("_M_Inv", transform->getWorldToLocalMatrix());
-				batch.first->setParameter("_MVP", mainCamera.projectionMatrix * mainCamera.viewMatrix * transform->getLocalToWorldMatrix());
-				batch.first->setParameter("_MV_T_Inv", glm::transpose(glm::inverse(mainCamera.viewMatrix * transform->getLocalToWorldMatrix())));
+				auto parent = transform->getParent();
+
+				// TODO: This should go into the transform class...
+				// ALSO: Reactivate frustum culling
+				glm::mat4 M = transform->getLocalToWorldMatrix();
+
+				if (parent)
+				{
+					M = M * parent->getLocalToWorldMatrix();
+				}
+
+				batch.first->setParameter("_M", M);
+				batch.first->setParameter("_M_Inv", glm::inverse(M));
+				batch.first->setParameter("_MVP", mainCamera.projectionMatrix * mainCamera.viewMatrix * M);
+				batch.first->setParameter("_MV_Inv_T", glm::transpose(glm::inverse(mainCamera.viewMatrix * M)));
 
 				bindMaterial(batch.second.material);
 
 				glBindVertexArray(batch.second.vaos[i]);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.second.ebos[i]);
-				glDrawElements(GL_TRIANGLES, batch.second.numTriangles[i], GL_UNSIGNED_INT, reinterpret_cast<void*>(0));
+				glDrawElementsBaseVertex(GL_TRIANGLES, batch.second.numTriangles[i], GL_UNSIGNED_INT, reinterpret_cast<void*>(0), batch.second.offsets[i]);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 				glBindVertexArray(0);
 
@@ -376,7 +459,7 @@ namespace aeyon
 				auto tex = std::get<Resource<Texture>>(p.second.value);
 				GLuint tidx = material->getTextureIndexMap().at(p.first);
 				glActiveTexture(GL_TEXTURE0 + tidx);
-				glBindTexture(static_cast<GLenum>(tex->getType()), tex->getGLHandle());
+				glBindTexture(static_cast<GLenum>(tex->getType()), tex->getNativeHandle());
 				glUniform1i(p.second.shaderProperty.location, tidx);
 			}
 			else
@@ -389,5 +472,10 @@ namespace aeyon
 	void GraphicsSystem::setSkybox(EntityHandle skybox)
 	{
 		m_skyBox = std::move(skybox);
+	}
+
+	SDLWindow* GraphicsSystem::getWindow()
+	{
+		return m_window;
 	}
 }

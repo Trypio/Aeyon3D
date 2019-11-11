@@ -60,9 +60,13 @@ namespace aeyon
   {
     m_size = size;
     m_bufferUsageType = usage;
+
+    GLuint prev;
+    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, reinterpret_cast<GLint*>(&prev));
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, static_cast<GLenum>(usage));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prev);
   }
 
   std::size_t IndexBuffer::getSize() const
@@ -77,9 +81,12 @@ namespace aeyon
 
   void IndexBuffer::write(void* data, std::size_t size, std::size_t offset)
   {
+		GLuint prev;
+		glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, reinterpret_cast<GLint*>(&prev));
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prev);
   }
 
   void* IndexBuffer::getNativeHandle()

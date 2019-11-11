@@ -14,8 +14,9 @@ namespace aeyon
 {
 	class SDLWindow : public Window
 	{
-	private:
+		using ProcAddress = void*(*)(const char*);
 
+	private:
 		struct SDLWindowDestroyer
 		{
 			void operator()(SDL_Window* window) const
@@ -68,9 +69,10 @@ namespace aeyon
 		void maximize() override;
 		void restore() override;
 
-		ProcAddress getProcAddress() const override;
+		ProcAddress getProcAddress() const;
+		void makeContextCurrent();
+		SDL_GLContext getGLContext() const;
 
-		void makeContextCurrent() override;
 		int getViewportWidth() const override;
 		int getViewportHeight() const override;
 		void setSwapInterval(int interval) override;

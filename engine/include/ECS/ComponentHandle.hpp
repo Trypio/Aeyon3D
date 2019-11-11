@@ -6,7 +6,7 @@
 #define AEYON3D_COMPONENTHANDLE_HPP
 
 #include <memory>
-#include "ComponentHandleInfo.hpp"
+#include "ComponentHandleDetails.hpp"
 
 namespace aeyon
 {
@@ -18,22 +18,22 @@ namespace aeyon
 	class ComponentHandle
 	{
 	private:
-		std::shared_ptr<ComponentHandleInfo<T>> m_sharedInfo;
+		std::shared_ptr<ComponentHandleDetails<T>> m_details;
 
 	public:
 		ComponentHandle()
-		: ComponentHandle(std::make_shared<ComponentHandleInfo<T>>())
+		: ComponentHandle(std::make_shared<ComponentHandleDetails<T>>())
 		{
 		}
 
-		explicit ComponentHandle(std::shared_ptr<ComponentHandleInfo<T>> componentInfo)
-		: m_sharedInfo(std::move(componentInfo))
+		explicit ComponentHandle(std::shared_ptr<ComponentHandleDetails<T>> componentDetails)
+		: m_details(std::move(componentDetails))
 		{
 		}
 
 		bool isValid() const
 		{
-			return m_sharedInfo->isValid;
+			return m_details->isValid();
 		}
 
 		explicit operator bool() const
@@ -41,19 +41,14 @@ namespace aeyon
 			return isValid();
 		}
 
-		bool operator!() const
-		{
-			return !bool();
-		}
-
 		T* get()
 		{
-			return m_sharedInfo->isValid ? m_sharedInfo->store->getComponent(m_sharedInfo->instance) : nullptr;
+			return m_details->isValid() ? m_details->store->getComponent(m_details->instance) : nullptr;
 		}
 
 		const T* get() const
 		{
-			return m_sharedInfo->isValid ? m_sharedInfo->store->getComponent(m_sharedInfo->instance) : nullptr;
+			return m_details->isValid() ? m_details->store->getComponent(m_details->instance) : nullptr;
 		}
 
 		T& operator*()

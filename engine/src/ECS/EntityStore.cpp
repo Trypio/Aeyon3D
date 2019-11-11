@@ -7,7 +7,7 @@
 
 namespace aeyon
 {
-	std::shared_ptr<EntityHandleInfo> EntityStore::createEntity()
+	std::shared_ptr<EntityHandleDetails> EntityStore::createEntity()
 	{
 		Entity::ID newID;
 		if (!m_unusedIDs.empty())
@@ -25,7 +25,7 @@ namespace aeyon
 			throw ECSException("There is no free entity slot left");
 		}
 
-		auto ptr = std::make_shared<EntityHandleInfo>(Entity(newID));
+		auto ptr = std::make_shared<EntityHandleDetails>(m_world, Entity(newID));
 
 		m_handles[ptr->entity] = ptr;
 
@@ -38,13 +38,24 @@ namespace aeyon
 
 		auto& ptr = m_handles.at(entity);
 		ptr->entity = Entity::Invalid;
-		ptr->isValid = false;
+		ptr->world = nullptr;
 		ptr.reset();
 	}
 
-	std::shared_ptr<EntityHandleInfo> EntityStore::getEntityHandleInfo(const Entity& entity) const
+	std::shared_ptr<EntityHandleDetails> EntityStore::getEntityHandleInfo(const Entity& entity) const
 	{
 		return m_handles.at(entity);
+	}
+
+	EntityStore::EntityStore(World* world)
+	: m_world(world)
+	{
+
+	}
+
+	World* EntityStore::getWorld()
+	{
+		return m_world;
 	}
 }
 
