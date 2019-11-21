@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <algorithm>
-#include "EntityHandle.hpp"
+#include "Entity.hpp"
 
 namespace aeyon
 {
@@ -26,21 +26,21 @@ namespace aeyon
 		World* m_world = nullptr;
 		Signature m_signatureAND;
 		Signature m_signatureOR;
-		std::vector<EntityHandle> m_entities;
+		std::vector<Entity> m_entities;
 
 	public:
 		virtual ~System() = default;
 
-		virtual void init() {};
+		virtual void start() {};
 		virtual void update() {};
 		virtual void fixedUpdate() {}
 		virtual void postUpdate() {}
 
 		void registerWorld(World* world);
 
-		void registerEntity(const EntityHandle& entity);
-		void unregisterEntity(const Entity& entity);
-    const std::vector<EntityHandle>& getEntities() const;
+		void registerEntity(const Entity& entity);
+		void unregisterEntity(const EntityID& entity);
+    const std::vector<Entity>& getEntities() const;
 
     /**
      * Adds a component type to the list of required components that an entity needs to have to be handled by this
@@ -50,7 +50,7 @@ namespace aeyon
 		template <typename T>
 		void requireComponent()
 		{
-			m_signatureAND.set(GetComponentTypeID<T>(), true);
+			m_signatureAND.set(GetComponentTypeIndex<T>(), true);
 		}
 
 		/**
@@ -61,7 +61,7 @@ namespace aeyon
 		template <typename T>
 		void acceptComponent()
 		{
-			m_signatureOR.set(GetComponentTypeID<T>(), true);
+			m_signatureOR.set(GetComponentTypeIndex<T>(), true);
 		}
 
 		const Signature& getSignatureAND() const;

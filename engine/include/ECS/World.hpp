@@ -5,23 +5,21 @@
 #ifndef AEYON3D_WORLD_HPP
 #define AEYON3D_WORLD_HPP
 
-#include "EntityStore.hpp"
-#include "Entity.hpp"
+#include "EntityID.hpp"
 #include "ComponentStore.hpp"
-#include "ComponentHandle.hpp"
-#include <memory>
 #include <vector>
 #include <bitset>
 #include <typeindex>
-#include "EntityMap.hpp"
 #include "Event/EventSystem.hpp"
 #include "Types.hpp"
-#include "Component.hpp"
+#include "ComponentTypeIndex.hpp"
+#include <memory>
+#include "ECRegister.hpp"
 
 namespace aeyon
 {
 	class System;
-	class EntityHandle;
+	class Entity;
 
 	/**
 	 * The World is where all entities, components and systems reside. It delegates requests for the creation or
@@ -30,12 +28,10 @@ namespace aeyon
 	 */
 	class World
 	{
-	private:
-		/**
-		 * Keeps track of all valid entity ids
-		 */
-		EntityStore m_entityStore;
+		friend class Entity;
+		template <typename T> friend class Component;
 
+	private:
 		/**
 		 * List of systems in registration/update order
 		 */
@@ -50,39 +46,62 @@ namespace aeyon
 		/**
 		 * Maps entities to bitmasks which represent what components are attached to them
 		 */
-		std::unordered_map<Entity, Signature> m_entityMasks;
+		std::unordered_map<EntityID, Signature> m_entityMasks;
 
 		/**
 		 * Vector of bidirectional maps which keep track of entities and their mapped components and vice-versa. The
 		 * index represents the TypeIndex of the component and can be retrieved via GetComponentTypeID<T>().
 		 */
-		std::array<EntityMap, NumComponentTypes> m_entityMaps;
+		std::array<ECRegister, NumComponentTypes> m_ecRegisters;
 
 		/**
 		 * Retrieves the component store which is assigned to the given type. A new component store of given type is
 		 * created if there doesn't exist one yet.
-		 *
 		 */
 		template <typename T>
-		ComponentStore<T>* getComponentStore() const
-		{
-			std::size_t typeID = GetComponentTypeID<T>();
+		ComponentStore<T>* getComponentStoreForType() const;
 
-			if (!m_componentStores[typeID])
-			{
-				m_componentStores[typeID] = std::make_unique<ComponentStore<T>>();
-			}
+		void addEntityToSystems(const EntityID& entityID, std::size_t typeID, const Signature& oldMask);
+		void removeEntityFromSystems(const EntityID& entityID, std::size_t typeID, const Signature& oldMask);
 
-			return static_cast<ComponentStore<T>*>(m_componentStores[typeID].get());
-		}
+		void destroyEntity(const EntityID& entityID);
+		bool isEntityIDValid(const EntityID& entityID) const;
 
-		void addEntityToSystems(const Entity& entity, std::size_t typeID, const Signature& oldMask);
-		void removeEntityFromSystems(const Entity& entity, std::size_t typeID, const Signature& oldMask);
+		template <typename T, typename ...P>
+		ComponentID addComponent(const EntityID& entityID, P&&... parameters);
+
+		template <typename T>
+		ComponentID copyComponent(const EntityID& entityID, const ComponentID& componentID);
+
+		template <typename T>
+		ComponentID moveComponent(const EntityID& to, const EntityID& from, const ComponentID& componentID);
+
+		template <typename T>
+		void removeComponent(const EntityID& entityID);
+
+		template <typename T>
+		bool hasComponent(const EntityID& entityID) const;
+
+		template <typename T>
+		ComponentID getComponentID(const EntityID& entityID) const;
+
+		template <typename T>
+		T* getComponent(const ComponentID& componentID);
+
+		template <typename T>
+		const T* getComponent(const ComponentID& componentID) const;
+
+		template <typename T>
+		EntityID getOwner(const ComponentID& componentID) const;
+
+		template <typename T>
+		bool isComponentIDValid(const ComponentID& componentID) const;
 
 	public:
 		World();
 		World(const World&) = delete;
 		World& operator=(const World&) = delete;
+		~World();
 
 	  /*
 		 * World event system
@@ -92,7 +111,7 @@ namespace aeyon
 		/*
 		 * Should be called before the first update, but after instantiation
 		 */
-		void init();
+		void start();
 
 		/**
 		 * Called each frame
@@ -110,69 +129,143 @@ namespace aeyon
 		void lateUpdate();
 
 		/**
-		 * Create a new entity
+		 * Create a new entity with no components attached to it
 		 */
-		EntityHandle createEntity();
+		Entity createEntity();
 
 		/**
-		 * Mark the given entity as destroyed
-		 */
-		void destroyEntity(const Entity& entity);
-
-
-		/**
-		 * Add a system to the world. System methods are guaranteed to be called in the order they were added to the world.
+		 * Adds a system to the world. System methods are guaranteed to be called in the order they were added to the world.
 		 */
 		void addSystem(std::unique_ptr<System> system);
-
-		/**
-		 * Add the given component to the given entity
-		 */
-		template <typename T, typename ...P>
-		ComponentHandle<T> addComponent(const Entity& entity, P&&... parameters)
-		{
-			auto store = getComponentStore<T>();
-			auto componentInfo = store->createComponent(std::forward<P>(parameters)...);
-			componentInfo->owner = entity;
-
-			m_entityMaps[GetComponentTypeID<T>()].insert(entity, componentInfo->instance);
-			Signature oldMask = m_entityMasks.at(entity);
-			m_entityMasks[entity].set(GetComponentTypeID<T>(), true);
-
-			addEntityToSystems(entity, GetComponentTypeID<T>(), oldMask);
-
-			return ComponentHandle<T>(componentInfo);
-		}
-
-		/**
-		 * Remove the given component type from the given entity
-		 */
-		template <typename T>
-		void removeComponent(const Entity& entity)
-		{
-			getComponentStore<T>()->destroyComponent(m_entityMaps[GetComponentTypeID<T>()].getInstance(entity));
-
-			Signature oldMask = m_entityMasks.at(entity);
-			m_entityMasks[entity].set(GetComponentTypeID<T>(), false);
-
-			removeEntityFromSystems(entity, GetComponentTypeID<T>(), oldMask);
-		}
-
-		template <typename T>
-		bool hasComponent(const Entity& entity) const
-		{
-			return m_entityMasks.at(entity).test(GetComponentTypeID<T>());
-		}
-
-		template <typename T>
-		ComponentHandle<T> getComponent(const Entity& entity) const
-		{
-			auto store = getComponentStore<T>();
-			auto id = GetComponentTypeID<T>();
-			auto instance = m_entityMaps[id].getInstance(entity);
-			return ComponentHandle<T>(store->getComponentHandleDetails(instance));
-		}
 	};
+
+	// Template method implementations
+	//--------------------------------------------------------------------------------------------------------------------
+	template<typename T, typename... P>
+	ComponentID World::addComponent(const EntityID& entityID, P&& ... parameters)
+	{
+		// TODO: Check for multiple components. Exchange old component with this one instead
+		auto store = getComponentStoreForType<T>();
+		auto instance = store->createComponent(std::forward<P>(parameters)...);
+		auto typeIndex = GetComponentTypeIndex<T>();
+
+		m_ecRegisters[typeIndex].insert(entityID, instance.id);
+
+		Signature oldMask = m_entityMasks.at(entityID);
+		m_entityMasks[entityID].set(typeIndex, true);
+
+		addEntityToSystems(entityID, typeIndex, oldMask);
+
+		return instance.id;
+	}
+
+	template <typename T>
+	ComponentID World::copyComponent(const EntityID& entityID, const ComponentID& componentID)
+	{
+		auto store = getComponentStoreForType<T>();
+		auto instance = store->copyComponent(componentID);
+		auto typeIndex = GetComponentTypeIndex<T>();
+
+		m_ecRegisters[typeIndex].insert(entityID, instance.id);
+
+		Signature oldMask = m_entityMasks.at(entityID);
+		m_entityMasks[entityID].set(typeIndex, true);
+
+		addEntityToSystems(entityID, typeIndex, oldMask);
+
+		return instance.id;
+	}
+
+	template <typename T>
+	ComponentID World::moveComponent(const EntityID& to, const EntityID& from, const ComponentID& componentID)
+	{
+		auto store = getComponentStoreForType<T>();
+		auto instance = store->copyComponent(componentID);
+		auto typeIndex = GetComponentTypeIndex<T>();
+
+		// Remove data about old entity
+		Signature oldMask = m_entityMasks.at(from);
+		m_entityMasks[from].set(typeIndex, false);
+		removeEntityFromSystems(from, typeIndex, oldMask);
+		m_ecRegisters[typeIndex].eraseEntityID(from);
+
+		// Add data about new entity
+		oldMask = m_entityMasks.at(to);
+		m_entityMasks[to].set(typeIndex, true);
+		addEntityToSystems(to, typeIndex, oldMask);
+		m_ecRegisters[typeIndex].insert(to, instance.id);
+
+		return instance.id;
+	}
+
+	template<typename T>
+	void World::removeComponent(const EntityID& entityID)
+	{
+		auto componentID = m_ecRegisters[GetComponentTypeIndex<T>()].getComponentID(entityID);
+		auto store = getComponentStoreForType<T>();
+		auto instance = store->getComponentInstance(componentID);
+
+		Signature oldMask = m_entityMasks.at(entityID);
+		m_entityMasks[entityID].set(GetComponentTypeIndex<T>(), false);
+
+		removeEntityFromSystems(entityID, GetComponentTypeIndex<T>(), oldMask);
+
+		store->destroyComponent(componentID);
+
+		m_ecRegisters[GetComponentTypeIndex<T>()].eraseComponentID(entityID);
+	}
+
+	template<typename T>
+	ComponentID World::getComponentID(const EntityID& entityID) const
+	{
+		auto componentIndex = GetComponentTypeIndex<T>();
+		return m_ecRegisters[componentIndex].getComponentID(entityID);
+	}
+
+	template<typename T>
+	bool World::hasComponent(const EntityID& entityID) const
+	{
+		return m_entityMasks.at(entityID).test(GetComponentTypeIndex<T>());
+	}
+
+	template<typename T>
+	T* World::getComponent(const ComponentID& componentID)
+	{
+		auto store = getComponentStoreForType<T>();
+		return store->getComponent(componentID);
+	}
+
+	template<typename T>
+	const T* World::getComponent(const ComponentID& componentID) const
+	{
+		auto store = getComponentStoreForType<T>();
+		return store->getComponent(componentID);
+	}
+
+	template <typename T>
+	EntityID World::getOwner(const ComponentID& componentID) const
+	{
+		return m_ecRegisters[GetComponentTypeIndex<T>()].getEntityID(componentID);
+	}
+
+	template <typename T>
+	bool World::isComponentIDValid(const ComponentID& componentID) const
+	{
+		return !getComponentStoreForType<T>()->getComponentInstance(componentID).id.isNil();
+	}
+
+	template<typename T>
+	ComponentStore<T>* World::getComponentStoreForType() const
+	{
+		std::size_t typeIndex = GetComponentTypeIndex<T>();
+
+		if (!m_componentStores[typeIndex])
+		{
+			m_componentStores[typeIndex] = std::make_unique<ComponentStore<T>>();
+		}
+
+		return static_cast<ComponentStore<T>*>(m_componentStores[typeIndex].get());
+	}
 }
 
 

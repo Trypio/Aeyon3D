@@ -73,6 +73,8 @@ namespace aeyon
 		NegativeZ
 	};
 
+
+
 };
 
 #endif //AEYON3D_TYPES_HPP

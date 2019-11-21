@@ -5,7 +5,7 @@
 #ifndef AEYON3D_SCENE_HPP
 #define AEYON3D_SCENE_HPP
 
-#include "ECS/EntityHandle.hpp"
+#include "ECS/Entity.hpp"
 #include <vector>
 
 namespace aeyon
@@ -13,15 +13,15 @@ namespace aeyon
 	class Scene
 	{
 	private:
-		std::vector<EntityHandle> m_entities;
+		std::vector<Entity> m_entities;
 
 	public:
-		const std::vector<EntityHandle>& getEntities() const
+		const std::vector<Entity>& getEntities() const
 		{
 			return m_entities;
 		}
 
-		void addEntity(const EntityHandle& entity)
+		void addEntity(const Entity& entity)
 		{
 			m_entities.push_back(entity);
 		}

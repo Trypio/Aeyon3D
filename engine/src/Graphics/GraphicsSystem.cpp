@@ -104,7 +104,7 @@ namespace aeyon
 			glDeleteFramebuffers(1, &m_shadowFBO);
 	}
 
-	void GraphicsSystem::init()
+	void GraphicsSystem::start()
 	{
 		m_world->eventSystem.subscribe<QuitEvent>([&](const QuitEvent& event) {
 			m_window->close();
@@ -469,7 +469,7 @@ namespace aeyon
 		}
 	}
 
-	void GraphicsSystem::setSkybox(EntityHandle skybox)
+	void GraphicsSystem::setSkybox(Entity skybox)
 	{
 		m_skyBox = std::move(skybox);
 	}

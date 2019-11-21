@@ -4,14 +4,10 @@ project(Aeyon3D LANGUAGES C CXX)
 set (CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES
-        src/ECS/Component.cpp
+        src/ECS/ComponentTypeIndex.cpp
         src/ECS/Entity.cpp
-        src/ECS/EntityHandle.cpp
-        src/ECS/EntityMap.cpp
-        src/ECS/EntityStore.cpp
         src/ECS/System.cpp
         src/ECS/World.cpp
-        src/ECS/EntityHandleDetails.cpp
         src/Event/Event.cpp
         src/Event/EventSystem.cpp
         src/Input/SDLInput.cpp
@@ -38,8 +34,7 @@ set(SOURCE_FILES
         src/Graphics/Texture.cpp
         src/Time.cpp
         src/Transform.cpp
-        src/ECS/ComponentInstance.cpp
-        src/ECS/ECSException.cpp
+        src/ECS/ECRegister.cpp
         src/Graphics/ShaderParser.cpp
         src/Graphics/PixelFormat.cpp
         src/Graphics/PropertyVisitor.cpp
@@ -53,7 +48,7 @@ find_package(assimp REQUIRED)
 #find_library(ASSIMP_LIBRARY NAMES ${ASSIMP_LIBRARIES} PATH ${ASSIMP_LIBRARY_DIRS})
 
 set(INCLUDE_DIRS_PUBLIC include ${SDL2_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS})
-set(LINK_LIBS_PUBLIC glad stb_vorbis stb_image pugixml imgui ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${ASSIMP_LIBRARIES})
+set(LINK_LIBS_PUBLIC glad stb_vorbis stb_image pugixml imgui stduuid ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${ASSIMP_LIBRARIES})
 
 if(${USE_LUA})
     find_package(Lua 5.3 REQUIRED)
@@ -61,9 +56,16 @@ if(${USE_LUA})
     list(APPEND LINK_LIBS_PUBLIC sol ${LUA_LIBRARIES})
 endif(${USE_LUA})
 
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
+
 add_subdirectory(lib)
 
-add_library(Aeyon3D STATIC ${SOURCE_FILES})
+add_library(Aeyon3D ${SOURCE_FILES})
 
 target_include_directories(Aeyon3D PUBLIC ${INCLUDE_DIRS_PUBLIC})
 target_link_libraries(Aeyon3D PUBLIC ${LINK_LIBS_PUBLIC})
+

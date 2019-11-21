@@ -5,11 +5,11 @@
 #ifndef AEYON3D_CAMERA_HPP
 #define AEYON3D_CAMERA_HPP
 
-#include "ECS/Component.hpp"
+#include "ECS/ComponentTypeIndex.hpp"
 
 namespace aeyon
 {
-	class Camera : public Component<Camera>
+	class Camera : public ComponentTypeIndex<Camera>
 	{
 	private:
 		float m_nearClipPlane = 0.1f;

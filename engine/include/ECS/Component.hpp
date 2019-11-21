@@ -5,39 +5,146 @@
 #ifndef AEYON3D_COMPONENT_HPP
 #define AEYON3D_COMPONENT_HPP
 
-#include <cstddef>
-#include <type_traits>
+#include "ComponentID.hpp"
 
 namespace aeyon
 {
-	struct ComponentTypeIDCounter
-	{
-		static std::size_t counter;
-	};
+	// Forward Declarations
+	class World;
+	class Entity;
+
+	template <typename T>
+	bool operator==(const Component<T>& lhs, const Component<T>& rhs);
+	template <typename T>
+	bool operator!=(const Component<T>& lhs, const Component<T>& rhs);
+	template <typename T>
+	bool operator<(const Component<T>& lhs, const Component<T>& rhs);
 
 	/**
-	 * Adds a unique component type ID trait to the deriving class
+   * Represents a reference to a unique component within the world
 	 */
 	template <typename T>
-	struct Component
+	class Component
 	{
-		virtual ~Component() = default;
+	private:
+		ComponentID m_id;
+		World* m_world;
+		
+	public:
+		Component();
+		Component(ComponentID id, World* world);
 
-		static std::size_t getTypeID()
-		{
-			static std::size_t id = ComponentTypeIDCounter::counter++;
-			return id;
-		}
+		bool isValid() const;
+		explicit operator bool() const;
+
+		friend bool operator== <>(const Component<T>& lhs, const Component<T>& rhs);
+		friend bool operator!= <>(const Component<T>& lhs, const Component<T>& rhs);
+		friend bool operator< <>(const Component<T>& lhs, const Component<T>& rhs);
+
+		ComponentID getID() const;
+		Entity getOwner() const;
+
+		T* get();
+		const T* get() const;
+		T& operator*();
+		T* operator->();
+		const T& operator*() const;
+		const T* operator->() const;
 	};
+}
 
-	/**
-	 * Returns the unique ID of the Component with the given type T
-	 */
-	template <typename T>
-	static std::size_t GetComponentTypeID()
+// Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+#include "World.hpp"
+#include "Entity.hpp"
+
+namespace aeyon
+{
+	template<typename T>
+	Component<T>::Component() : m_world(nullptr) {}
+
+	template<typename T>
+	Component<T>::Component(ComponentID id, World* world) : m_id(id), m_world(world) {}
+
+	template<typename T>
+	ComponentID Component<T>::getID() const
 	{
-		return Component<typename std::remove_const<T>::type>::getTypeID();
+		return m_id;
+	}
+
+	template<typename T>
+	T* Component<T>::get()
+	{
+		return m_world->getComponent<T>(m_id);
+	}
+
+	template<typename T>
+	const T* Component<T>::get() const
+	{
+		return m_world->getComponent<T>(m_id);
+	}
+
+	template<typename T>
+	Entity Component<T>::getOwner() const
+	{
+		return Entity(m_world->getOwner<T>(m_id), m_world);
+	}
+
+	template <typename T>
+	bool Component<T>::isValid() const
+	{
+		return m_world && !m_id.isNil() && m_world->isComponentIDValid<T>(m_id);
+	}
+
+	template <typename T>
+	Component<T>::operator bool() const
+	{
+		return isValid();
+	}
+
+	template <typename T>
+	bool operator==(const Component<T>& lhs, const Component<T>& rhs)
+	{
+		return lhs.m_id == rhs.m_id;
+	}
+
+	template <typename T>
+	bool operator!=(const Component<T>& lhs, const Component<T>& rhs)
+	{
+		return !(lhs == rhs);
+	}
+
+	template <typename T>
+	bool operator<(const Component<T>& lhs, const Component<T>& rhs)
+	{
+		return lhs.m_id < rhs.m_id;
+	}
+
+	template<typename T>
+	T& Component<T>::operator*()
+	{
+		return *get();
+	}
+
+	template<typename T>
+	T* Component<T>::operator->()
+	{
+		return get();
+	}
+
+	template<typename T>
+	const T& Component<T>::operator*() const
+	{
+		return *get();
+	}
+
+	template<typename T>
+	const T* Component<T>::operator->() const
+	{
+		return get();
 	}
 }
 
-#endif
+
+#endif //AEYON3D_COMPONENT_HPP

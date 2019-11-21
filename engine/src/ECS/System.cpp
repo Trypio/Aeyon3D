@@ -3,7 +3,7 @@
 //
 
 #include "ECS/System.hpp"
-#include "ECS/EntityHandle.hpp"
+#include "ECS/Entity.hpp"
 
 namespace aeyon
 {
@@ -23,23 +23,23 @@ namespace aeyon
 		return m_signatureOR;
 	}
 
-	void System::registerEntity(const EntityHandle& entity)
+	void System::registerEntity(const Entity& entity)
 	{
 		m_entities.push_back(entity);
 	}
 
-	void System::unregisterEntity(const Entity& entity)
+	void System::unregisterEntity(const EntityID& entity)
 	{
 		auto removeIt = std::remove_if(
 				m_entities.begin(),
 				m_entities.end(),
-				[&entity](const auto& e) { return e.get() == entity; }
+				[&entity](const auto& e) { return e.getID() == entity; }
 				);
 
 		m_entities.erase(removeIt);
 	}
 
-	const std::vector<EntityHandle>& System::getEntities() const
+	const std::vector<Entity>& System::getEntities() const
 	{
 		return m_entities;
 	}

@@ -7,172 +7,153 @@
 
 #include <array>
 #include <queue>
-#include <memory>
 #include "ComponentStoreBase.hpp"
-#include "ComponentHandleDetails.hpp"
-#include "ECSException.hpp"
+#include "ComponentInstance.hpp"
+#include "ComponentID.hpp"
+#include "Types.hpp"
 
 namespace aeyon
 {
 	/**
-	 * Creates and manages the lifetime of ECS components.
+	 * The ComponentStore is responsible for managing creating and deleting all components of the given type T.
+	 * All components are kept in an array of size MaxNumberOfComponents. A given valid ComponentID can be resolved
+	 * into the respective array index.
 	 */
 	template <typename T>
 	class ComponentStore : public ComponentStoreBase
 	{
 	private:
-		ComponentInstance createInstance()
-		{
-			ComponentInstance newInstance;
-			if (!m_unusedInstances.empty())
-			{
-				newInstance = ComponentInstance(m_unusedInstances.front());
-				m_unusedInstances.pop();
-			}
-			else
-			{
-				newInstance = ComponentInstance(m_instanceCounter++);
-			}
-
-			return newInstance;
-		}
-
 		std::array<T, MaxNumberOfComponents> m_components;
-		ComponentInstance::ID m_instanceCounter = 1;
-		std::queue<ComponentInstance::ID> m_unusedInstances;
-		std::array<std::shared_ptr<ComponentHandleDetails<T>>, MaxNumberOfComponents> m_componentHandles;
+		std::size_t m_indexCounter = 0;
+		std::queue<std::size_t> m_unusedIndices;
+		std::unordered_map<ComponentID, ComponentInstance> m_instances;
 
-
+		ComponentInstance createInstance();
+		
 	public:
 		ComponentStore() = default;
 		ComponentStore(const ComponentStore&) = delete;
 		ComponentStore& operator=(const ComponentStore&) = delete;
 
 		/**
-		 * Creates a new component and returns unique information about it as a shared pointer
+		 * Returns the component instance information for the given component ID.
+		 * If there is no component with the given ID, the returned instance will carry an invalid ID field.
+		 */
+		ComponentInstance getComponentInstance(const ComponentID& id) const;
+
+		/**
+		 * Creates a new component
 		 */
 		template <typename ...P>
-		std::shared_ptr<ComponentHandleDetails<T>> createComponent(P&& ... parameters)
-		{
-			ComponentInstance newInstance = createInstance();
-
-			if (!newInstance)
-			{
-				throw ECSException("Component ID overflow");
-			}
-
-			if (newInstance.getID() >= MaxNumberOfComponents)
-			{
-				throw ECSException("Reached maximum number of components for this component type");
-			}
-
-			m_components[newInstance.getID()] = T(std::forward<P>(parameters)...);
-
-			auto ptr = std::make_shared<ComponentHandleDetails<T>>(this, newInstance, Entity::Invalid);
-			m_componentHandles[newInstance.getID()] = ptr;
-
-			return ptr;
-		}
+		ComponentInstance createComponent(P&& ... parameters);
 
 		/**
-		 * Copies the component with the given instance number. The owning entity of the copied component is set to
-		 * invalid! Make sure that the component implements at least a copy constructor.
+		 * Copies the component to a given owner. Make sure that the component implements at least a copy constructor.
+		 * If there is no component with the given ID, the returned instance will carry an invalid ID field.
 		 */
-		template <typename ...P>
-		std::shared_ptr<ComponentHandleDetails<T>> copyComponent(const ComponentInstance& srcInstance)
-		{
-			if (!srcInstance)
-			{
-				throw ECSException("The component instance is invalid and can't be copied");
-			}
+		ComponentInstance copyComponent(const ComponentID& srcID) override;
 
-			if (srcInstance.getID() >= MaxNumberOfComponents)
-			{
-				throw ECSException("The component instance you try to destroy is greater than the largest component ID");
-			}
-
-			ComponentInstance newInstance = createInstance();
-
-			if (!newInstance)
-			{
-				throw ECSException("Component ID overflow");
-			}
-
-			if (newInstance.getID() >= MaxNumberOfComponents)
-			{
-				throw ECSException("Reached maximum number of components for this component type");
-			}
-
-			m_components[newInstance] = T(m_components[srcInstance]);
-
-			auto ptr = std::make_shared<ComponentHandleDetails<T>>(Entity::Invalid, this, newInstance);
-			m_componentHandles[newInstance] = ptr;
-
-			return ptr;
-		}
 
 		/**
-		 * Destroys the component with the given instance number and invalidates all shared information
+		 * Destroys the component with the given instance number
 		 */
-		void destroyComponent(const ComponentInstance& instance)
-		{
-			if (!instance)
-			{
-				throw ECSException("The component instance is invalid and can't be destroyed");
-			}
-
-			if (instance.getID() >= MaxNumberOfComponents)
-			{
-				throw ECSException("The component instance you try to destroy is greater than the largest component ID");
-			}
-
-			m_unusedInstances.push(instance.getID());
-			m_components[instance.getID()] = T();
-			auto& ptr = m_componentHandles[instance.getID()];
-			ptr->owner = Entity::Invalid;
-			ptr->store = nullptr;
-			ptr->instance = ComponentInstance::Invalid;
-			ptr.reset();
-		}
+		void destroyComponent(const ComponentID& id) override;
 
 		/**
-		 * Gets a pointer to the component with the given instance ID
+		 * Gets a pointer to the component with the given component ID.
+		 * If there is no component with the given ID, the null pointer will be returned.
 		 */
-		T* getComponent(const ComponentInstance& instance)
-		{
-			if (!instance)
-			{
-				throw ECSException("The component instance  ID is invalid");
-			}
-
-			if (instance.getID() >= MaxNumberOfComponents)
-			{
-				throw ECSException("The component instance ID is greater than the largest component");
-			}
-
-			return &m_components[instance.getID()];
-		}
-
-		const T* getComponent(const ComponentInstance& instance) const
-		{
-			return getComponent(instance);
-		}
-
-		std::shared_ptr<ComponentHandleDetails<T>> getComponentHandleDetails(const ComponentInstance& instance) const
-		{
-			if (!instance)
-			{
-				throw ECSException("The component instance is invalid");
-			}
-
-			if (instance.getID() >= MaxNumberOfComponents)
-			{
-				throw ECSException("The component instance ID is greater than the largest component");
-			}
-
-			return m_componentHandles[instance.getID()];
-		}
+		T* getComponent(const ComponentID& id);
+		const T* getComponent(const ComponentID& id) const;
 	};
+
+	template<typename T>
+	ComponentInstance ComponentStore<T>::createInstance()
+	{
+		ComponentInstance newInstance;
+
+		newInstance.id = ComponentID::generate();
+
+		if (!m_unusedIndices.empty())
+		{
+			newInstance.index = m_unusedIndices.front();
+			m_unusedIndices.pop();
+		}
+		else
+		{
+			newInstance.index = m_indexCounter++;
+		}
+
+		return newInstance;
+	}
+	
+	template<typename T>
+	ComponentInstance ComponentStore<T>::getComponentInstance(const ComponentID& id) const
+	{
+		const auto it = m_instances.find(id);
+		if (it == m_instances.end())
+			return ComponentInstance();
+		else
+			return it->second;
+	}
+
+	template<typename T>
+	template<typename... P>
+	ComponentInstance ComponentStore<T>::createComponent(P&& ... parameters)
+	{
+		ComponentInstance newInstance = createInstance();
+		m_components[newInstance.index] = T(std::forward<P>(parameters)...);
+		m_instances[newInstance.id] = newInstance;
+
+		return newInstance;
+	}
+
+	template<typename T>
+	ComponentInstance ComponentStore<T>::copyComponent(const ComponentID& srcID)
+	{
+		const auto it = m_instances.find(srcID);
+		if (it == m_instances.end())
+		{
+			return ComponentInstance();
+		}
+		else
+		{
+			ComponentInstance newInstance = createInstance();
+
+			m_components[newInstance.index] = T(m_components[it->second.index]);
+			m_instances[newInstance.id] = newInstance;
+
+			return newInstance;
+		}
+	}
+
+	template<typename T>
+	void ComponentStore<T>::destroyComponent(const ComponentID& id)
+	{
+		auto it = m_instances.find(id);
+
+		if (it != m_instances.end())
+		{
+			std::size_t index = it->second.index;
+			m_unusedIndices.push(index);
+			m_components[index] = T();
+			m_instances.erase(id);
+		}
+	}
+
+	template<typename T>
+	T* ComponentStore<T>::getComponent(const ComponentID& id)
+	{
+		const auto it = m_instances.find(id);
+		return (it != m_instances.end()) ? &m_components[it->second.index] : nullptr;
+	}
+
+	template<typename T>
+	const T* ComponentStore<T>::getComponent(const ComponentID& id) const
+	{
+		const auto it = m_instances.find(id);
+		return (it != m_instances.end()) ? &m_components[it->second.index] : nullptr;
+	}
 }
 
 

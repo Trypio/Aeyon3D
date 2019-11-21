@@ -5,7 +5,7 @@
 #ifndef AEYON3D_AUDIOSOURCE_HPP
 #define AEYON3D_AUDIOSOURCE_HPP
 
-#include "ECS/Component.hpp"
+#include "ECS/ComponentTypeIndex.hpp"
 #include "Resource.hpp"
 #include "AudioClip.hpp"
 #include <AL/al.h>

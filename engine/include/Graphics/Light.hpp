@@ -6,11 +6,11 @@
 #define AEYON3D_DIRECTIONALLIGHT_HPP
 
 #include "Color.hpp"
-#include "ECS/Component.hpp"
+#include "ECS/ComponentTypeIndex.hpp"
 
 namespace aeyon
 {
-	class Light : public Component<Light>
+	class Light : public ComponentTypeIndex<Light>
 	{
 	public:
 		enum class Type

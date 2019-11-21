@@ -2,24 +2,25 @@
 //
 //
 
-#include <ECS/World.hpp>
-
 #include "ECS/World.hpp"
 #include "ECS/System.hpp"
+#include "ECS/Entity.hpp"
 
 namespace aeyon
 {
-	void World::init()
+	World::World() = default;
+	World::~World() = default;
+
+	void World::start()
 	{
 		for (auto& system : m_systems)
 		{
-			system->init();
+			system->start();
 		}
 	}
 
 	void World::update()
 	{
-		// TODO(taurheim) check to make sure that the world has called init
 		eventSystem.update();
 
 		for (auto& system : m_systems)
@@ -44,26 +45,26 @@ namespace aeyon
 		}
 	}
 
-	EntityHandle World::createEntity()
+	Entity World::createEntity()
 	{
-		auto infoPtr = m_entityStore.createEntity();
+		auto id = EntityID::generate();
 
-		m_entityMasks[infoPtr->entity] = Signature();
+		m_entityMasks[id] = Signature();
 
-		return EntityHandle(infoPtr);
+		return Entity(id, this);
 	}
 
-	void World::destroyEntity(const Entity& entity)
+	void World::destroyEntity(const EntityID& entityID)
 	{
-		// TODO: Find attached components and call destroy() (same problem as with copy())
-		for (auto& map : m_entityMaps)
+		for (std::size_t i = 0; i < m_ecRegisters.size(); i++)
 		{
-			map.remove(entity);
+			auto& map = m_ecRegisters[i];
+			const auto componentID = map.getComponentID(entityID);
+			map.eraseEntityID(entityID);
+			m_componentStores[i]->destroyComponent(componentID);
 		}
 
-		m_entityMasks.erase(entity);
-
-		m_entityStore.destroyEntity(entity);
+		m_entityMasks.erase(entityID);
 	}
 
 	void World::addSystem(std::unique_ptr<System> system)
@@ -74,14 +75,14 @@ namespace aeyon
 		{
 			if ((system->getSignatureAND() & ~p.second).none() || (system->getSignatureOR() & p.second).any())
 			{
-				system->registerEntity(EntityHandle(m_entityStore.getEntityHandleInfo(p.first)));
+				system->registerEntity(Entity());
 			}
 		}
 
 		m_systems.push_back(std::move(system));
 	}
 
-	void World::addEntityToSystems(const Entity& entity, size_t typeID, const Signature& oldMask)
+	void World::addEntityToSystems(const EntityID& entityID, size_t typeID, const Signature& oldMask)
 	{
 		for (auto& system : m_systems)
 		{
@@ -93,8 +94,7 @@ namespace aeyon
 					// Check if any of the bits of the old mask is also set in the system's OR-mask. This would mean that the entity was already added to the system
 					if ((oldMask & system->getSignatureOR()).none() && (oldMask & system->getSignatureAND()) != system->getSignatureAND())
 					{
-						auto infoPtr = m_entityStore.getEntityHandleInfo(entity);
-						system->registerEntity(EntityHandle(infoPtr));
+						system->registerEntity(Entity(entityID, this));
 					}
 				}
 				else if (system->getSignatureAND().test(typeID))
@@ -105,15 +105,14 @@ namespace aeyon
 
 					if ((new_mask & system->getSignatureAND()) == system->getSignatureAND() && (oldMask & system->getSignatureAND()) != system->getSignatureAND() && (oldMask & system->getSignatureOR()).none())
 					{
-						auto infoPtr = m_entityStore.getEntityHandleInfo(entity);
-						system->registerEntity(EntityHandle(infoPtr));
+						system->registerEntity(Entity(entityID, this));
 					}
 				}
 			}
 		}
 	}
 
-	void World::removeEntityFromSystems(const Entity& entity, size_t typeID, const Signature& oldMask)
+	void World::removeEntityFromSystems(const EntityID& entityID, size_t typeID, const Signature& oldMask)
 	{
 		for (auto& system : m_systems)
 		{
@@ -125,7 +124,7 @@ namespace aeyon
 					// Check if the old mask was even fulfilling the systems AND-mask
 					if ((oldMask & system->getSignatureAND()) == system->getSignatureAND())
 					{
-						system->unregisterEntity(entity);
+						system->unregisterEntity(entityID);
 					}
 				}
 				else if (system->getSignatureOR().test(typeID))
@@ -136,17 +135,18 @@ namespace aeyon
 
 					if ((new_mask & system->getSignatureAND()) != system->getSignatureAND() && (oldMask & system->getSignatureOR()).any() && (new_mask & system->getSignatureOR()).none())
 					{
-						system->unregisterEntity(entity);
+						system->unregisterEntity(entityID);
 					}
 				}
 			}
 		}
 	}
 
-	World::World()
-	: m_entityStore(this)
+	bool World::isEntityIDValid(const EntityID& entityID) const
 	{
+		const auto it = m_entityMasks.find(entityID);
 
+		return it != m_entityMasks.end();
 	}
 }
 

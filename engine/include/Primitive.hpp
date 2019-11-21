@@ -6,7 +6,7 @@
 #define AEYON3D_PRIMITIVE_HPP
 
 
-#include "ECS/EntityHandle.hpp"
+#include "ECS/Entity.hpp"
 #include "Transform.hpp"
 #include "Graphics/Material.hpp"
 #include "Camera.hpp"
@@ -22,11 +22,11 @@ namespace aeyon
 	{
 		// TODO: Supply a white default material for all primitves (or every mesh renderer at creation)
 
-		static EntityHandle createPlane(World* world, bool withNormals = true, bool withUVs = true)
+		static Entity createPlane(World* world, bool withNormals = true, bool withUVs = true)
 		{
 			// TODO: Pre-generate meshes as shared resources
 
-			EntityHandle plane = world->createEntity();
+			Entity plane = world->createEntity();
 			plane.addComponent<Transform>();
 
 
@@ -89,11 +89,11 @@ namespace aeyon
 			return plane;
 		}
 
-		static EntityHandle createCube(World* world, bool withNormals = true, bool withUVs = true)
+		static Entity createCube(World* world, bool withNormals = true, bool withUVs = true)
 		{
 			// TODO: Pre-generate meshes as shared resources
 
-			EntityHandle cube = world->createEntity();
+			Entity cube = world->createEntity();
 			cube.addComponent<Transform>();
 
 			VertexFormat format;

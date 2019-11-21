@@ -74,7 +74,7 @@ namespace aeyon
 
 
 
-		m_world->init();
+		m_world->start();
 
 		start();
 
@@ -96,7 +96,7 @@ namespace aeyon
 
 
 
-	EntityHandle Engine::loadModel(const std::string& path, Resource<Material> material)
+	Entity Engine::loadModel(const std::string& path, Resource<Material> material)
 	{
 		Assimp::Importer importer;
 
@@ -108,7 +108,7 @@ namespace aeyon
 			throw std::runtime_error(std::string("ERROR::ASSIMP::") + importer.GetErrorString());
 		}
 
-		EntityHandle root = m_world->createEntity();
+		Entity root = m_world->createEntity();
 		root.addComponent<Transform>();
 
 		processNode(scene, scene->mRootNode, root, material);
@@ -116,7 +116,7 @@ namespace aeyon
 		return root;
 	}
 
-	void Engine::processNode(const aiScene* scene, const aiNode* node, EntityHandle entity, Resource<Material> material)
+	void Engine::processNode(const aiScene* scene, const aiNode* node, Entity entity, Resource<Material> material)
 	{
 		auto transform = entity.getComponent<Transform>();
 
@@ -236,7 +236,7 @@ namespace aeyon
 
 		for (unsigned int iChild = 0; iChild < node->mNumChildren; iChild++)
 		{
-			EntityHandle child = m_world->createEntity();
+			Entity child = m_world->createEntity();
 			child.addComponent<Transform>()->setParent(transform.get());
 			processNode(scene, node->mChildren[iChild], child, material);
 		}

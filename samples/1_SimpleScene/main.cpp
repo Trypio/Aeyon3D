@@ -13,8 +13,8 @@ using namespace aeyon;
 class SimpleScene : public Engine
 {
 private:
-	ComponentHandle<Transform> cubeTransform1;
-	ComponentHandle<Transform> cubeTransform2;
+	Component<Transform> cubeTransform1;
+	Component<Transform> cubeTransform2;
 
 public:
 	void start() override

@@ -8,7 +8,7 @@
 #include <memory>
 #include "TextureCache.hpp"
 #include "ShaderCache.hpp"
-#include "ECS/EntityHandle.hpp"
+#include "ECS/Entity.hpp"
 #include "Graphics/Material.hpp"
 #include "Graphics/GraphicsSystem.hpp"
 #include "Input/Input.hpp"
@@ -44,8 +44,8 @@ namespace aeyon
 		virtual void lateUpdate();
 
 		void run();
-		EntityHandle loadModel(const std::string& path, Resource<Material> material);
-		void processNode(const aiScene* scene, const aiNode* node, EntityHandle entity, Resource<Material> material);
+		Entity loadModel(const std::string& path, Resource<Material> material);
+		void processNode(const aiScene* scene, const aiNode* node, Entity entity, Resource<Material> material);
 	};
 }
 
