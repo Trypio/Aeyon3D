@@ -4,23 +4,26 @@
 
 #include "Time.hpp"
 
-using ms = std::chrono::duration<float, std::milli>;
 
 namespace aeyon
 {
-	Time::clock::time_point Time::m_now = Time::clock::now();
+	Time::clock::time_point Time::m_start = Time::clock::now();
+	Time::clock::time_point Time::m_now = m_start;
 	Time::clock::time_point Time::m_last = m_now;
-	float Time::m_deltaTime = 0.0f;
 
 	void Time::update()
 	{
 		m_last = m_now;
 		m_now = clock::now();
-		m_deltaTime = std::chrono::duration_cast<ms>(m_now - m_last).count();
 	}
 
 	float Time::getDeltaTime()
 	{
-		return m_deltaTime;
+		return std::chrono::duration_cast<std::chrono::milliseconds>(m_now - m_last).count() / 1000.0f;
+	}
+
+	float Time::getTime()
+	{
+		return std::chrono::duration_cast<std::chrono::milliseconds>(m_now - m_start).count() / 1000.0f;
 	}
 }

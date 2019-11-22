@@ -19,14 +19,12 @@
 #include <assimp/postprocess.h>
 #include "ECS/World.hpp"
 #include "Graphics/MeshRenderer.hpp"
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
 
 namespace aeyon
 {
 	void Engine::setup()
 	{
+		// To be overridden by user
 	}
 
 	void Engine::start()
@@ -55,39 +53,36 @@ namespace aeyon
 
 		auto sdlInput = std::make_unique<SDLInput>();
 		auto sdlWindow = std::make_unique<SDLWindow>("Aeyon3D", SDL_WINDOWPOS_CENTERED,
-																								 SDL_WINDOWPOS_CENTERED, 1024, 768);
+																								 SDL_WINDOWPOS_CENTERED, 1024, 768, &eventSystem);
 
 
-		m_world = std::make_unique<World>();
+		world = std::make_unique<World>(&eventSystem);
 
 		std::unique_ptr<GraphicsSystem> glGraphics = std::make_unique<GraphicsSystem>(sdlWindow.get());
 
-		m_graphics = glGraphics.get();
-		m_world->addSystem(std::make_unique<FirstPersonSystem>(sdlInput.get()));
-		m_world->addSystem(std::make_unique<CollisionSystem>());
-		m_world->addSystem(std::move(glGraphics));
-		m_input = std::move(sdlInput);
-		m_window = std::move(sdlWindow);
+		graphics = glGraphics.get();
+		world->addSystem(std::make_unique<FirstPersonSystem>(sdlInput.get()));
+		world->addSystem(std::make_unique<CollisionSystem>());
+		world->addSystem(std::move(glGraphics));
+		input = std::move(sdlInput);
+		window = std::move(sdlWindow);
 
+		world->setup();
+		setup();
 
-		// TODO: Init Gui
-
-
-
-		m_world->start();
-
+		world->start();
 		start();
 
-		while (!m_window->shouldClose())
+		while (!window->shouldClose())
 		{
 			Time::update();
-			m_input->update();
+			input->update();
 			update();
-			m_world->update();
+			world->update();
 
 			lateUpdate();
 
-			m_window->swapBuffers();
+			window->swapBuffers();
 		}
 
 		SDL_Quit();
@@ -108,7 +103,7 @@ namespace aeyon
 			throw std::runtime_error(std::string("ERROR::ASSIMP::") + importer.GetErrorString());
 		}
 
-		Entity root = m_world->createEntity();
+		Entity root = world->createEntity();
 		root.addComponent<Transform>();
 
 		processNode(scene, scene->mRootNode, root, material);
@@ -236,7 +231,7 @@ namespace aeyon
 
 		for (unsigned int iChild = 0; iChild < node->mNumChildren; iChild++)
 		{
-			Entity child = m_world->createEntity();
+			Entity child = world->createEntity();
 			child.addComponent<Transform>()->setParent(transform.get());
 			processNode(scene, node->mChildren[iChild], child, material);
 		}

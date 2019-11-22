@@ -5,11 +5,25 @@
 #include "ECS/World.hpp"
 #include "ECS/System.hpp"
 #include "ECS/Entity.hpp"
+#include "Event/EventSystem.hpp"
 
 namespace aeyon
 {
-	World::World() = default;
+	World::World(EventSystem* eventSystem)
+	: eventSystem(eventSystem)
+	{
+
+	}
+
 	World::~World() = default;
+
+	void World::setup()
+	{
+		for (auto& system : m_systems)
+		{
+			system->start();
+		}
+	}
 
 	void World::start()
 	{
@@ -21,7 +35,7 @@ namespace aeyon
 
 	void World::update()
 	{
-		eventSystem.update();
+		eventSystem->update();
 
 		for (auto& system : m_systems)
 		{
@@ -61,7 +75,8 @@ namespace aeyon
 			auto& map = m_ecRegisters[i];
 			const auto componentID = map.getComponentID(entityID);
 			map.eraseEntityID(entityID);
-			m_componentStores[i]->destroyComponent(componentID);
+			if (m_componentStores[i] != nullptr)
+				m_componentStores[i]->destroyComponent(componentID);
 		}
 
 		m_entityMasks.erase(entityID);

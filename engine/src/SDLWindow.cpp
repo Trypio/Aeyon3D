@@ -2,13 +2,14 @@
 //
 //
 
+#include <Event/WindowResizeEvent.hpp>
 #include "SDLWindow.hpp"
-#include "glad/glad.h"
+#include "Event/EventSystem.hpp"
 
 namespace aeyon
 {
-	SDLWindow::SDLWindow(const std::string& title, int x, int y, int width, int height)
-	: m_shouldClose(false)
+	SDLWindow::SDLWindow(const std::string& title, int x, int y, int width, int height, EventSystem* eventSystem)
+	: m_eventSystem(eventSystem)
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -26,31 +27,12 @@ namespace aeyon
 		m_glContext = SDL_GL_CreateContext(window);
 
 		SDL_GL_SetSwapInterval(1);
-
-		//SDL_CaptureMouse(SDL_TRUE);
 		SDL_SetRelativeMouseMode(SDL_TRUE);
-	}
-
-	SDLWindow::SDLWindow(SDLWindow&& src) noexcept
-	: m_sdlWindow(std::move(src.m_sdlWindow)), m_glContext(src.m_glContext), m_shouldClose(src.shouldClose())
-	{
-		m_glContext = nullptr;
-	}
-
-	SDLWindow& SDLWindow::operator=(SDLWindow&& rhs) noexcept
-	{
-		m_sdlWindow = std::move(rhs.m_sdlWindow);
-		m_glContext = rhs.m_glContext;
-		rhs.m_glContext = nullptr;
-		m_shouldClose = rhs.m_shouldClose;
-
-		return *this;
 	}
 
 	SDLWindow::~SDLWindow()
 	{
 		SDL_GL_DeleteContext(m_glContext);
-		SDL_DestroyWindow(m_sdlWindow.get());
 	}
 
 	void SDLWindow::show() 
@@ -125,6 +107,13 @@ namespace aeyon
 	void SDLWindow::setSize(int width, int height) 
 	{
 		SDL_SetWindowSize(m_sdlWindow.get(), width, height);
+
+		WindowResizeEvent e;
+		e.width = width;
+		e.height = height;
+		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &e.viewportWidth, &e.viewportHeight);
+
+		m_eventSystem->publish(e);
 	}
 
 	int SDLWindow::getWidth() const 
@@ -195,5 +184,10 @@ namespace aeyon
 	SDL_GLContext SDLWindow::getGLContext() const
 	{
 		return m_glContext;
+	}
+
+	SDL_Window* SDLWindow::getSDLWindow()
+	{
+		return m_sdlWindow.get();
 	}
 }

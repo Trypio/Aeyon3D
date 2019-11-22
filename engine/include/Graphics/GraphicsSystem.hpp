@@ -11,6 +11,7 @@
 #include "ECS/Entity.hpp"
 #include "Resource.hpp"
 #include "Graphics/Frustum.hpp"
+#include "Time.hpp"
 
 namespace aeyon
 {
@@ -60,11 +61,16 @@ namespace aeyon
 		Resource<Texture> m_shadowMap;
 		GLuint m_shadowFBO;
 
+		float m_previousTime;
+		float m_frameTime = 0.0f;
+		int m_numFrames = 0;
+
 
 		void generateRenderInfo(const std::string& shaderName);
 		void setCommonShaderProperties();
 		void renderVAOs(std::uint32_t passIndex);
 		void bindMaterial(Resource<Material>& material);
+
 
 	public:
 		explicit GraphicsSystem(SDLWindow* window);
@@ -74,7 +80,7 @@ namespace aeyon
 
 		SDLWindow* getWindow();
 
-		void start() override;
+		void setup() override;
 		void update() override;
 
 		void render();

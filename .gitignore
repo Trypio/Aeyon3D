@@ -36,3 +36,6 @@
 
 # CMake Builds
 cmake-build*
+
+# Custom Files
+engine/misc

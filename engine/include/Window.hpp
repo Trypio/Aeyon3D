@@ -9,6 +9,8 @@
 
 namespace aeyon
 {
+	class EventSystem;
+
 	class Window
 	{
 	public:

@@ -42,6 +42,7 @@ architecture.
 - GLM 0.9.8 (https://glm.g-truc.net/0.9.8/index.html)
 - Assimp (http://www.assimp.org/)
 - Dear ImGui (https://github.com/ocornut/imgui)
+- Catch2 (https://github.com/catchorg/Catch2)
 - pugixml (https://pugixml.org/)
 - stb_image, stb_vorbis (https://github.com/nothings/stb)
 - Lua (https://www.lua.org/)

@@ -8,10 +8,11 @@
 #include "Window.hpp"
 #include <SDL2/SDL.h>
 #include <memory>
-#include "ECSException.hpp"
 
 namespace aeyon
 {
+	class EventSystem;
+
 	class SDLWindow : public Window
 	{
 		using ProcAddress = void*(*)(const char*);
@@ -27,17 +28,14 @@ namespace aeyon
 
 		std::unique_ptr<SDL_Window, SDLWindowDestroyer> m_sdlWindow;
 		SDL_GLContext m_glContext;
-		bool m_shouldClose;
+		bool m_shouldClose = false;
+		EventSystem* m_eventSystem = nullptr;
 
 	public:
-
-		SDLWindow(const std::string& title, int x, int y, int width, int height);
+		SDLWindow(const std::string& title, int x, int y, int width, int height, EventSystem* eventSystem);
 
 		SDLWindow(const SDLWindow&) = delete;
-		SDLWindow(SDLWindow&& src) noexcept;
-
 		SDLWindow& operator=(const SDLWindow&) = delete;
-		SDLWindow& operator=(SDLWindow&& rhs) noexcept;
 
 		~SDLWindow() override;
 
@@ -71,6 +69,7 @@ namespace aeyon
 
 		ProcAddress getProcAddress() const;
 		void makeContextCurrent();
+		SDL_Window* getSDLWindow();
 		SDL_GLContext getGLContext() const;
 
 		int getViewportWidth() const override;

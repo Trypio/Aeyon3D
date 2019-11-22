@@ -31,6 +31,7 @@ namespace aeyon
 	public:
 		virtual ~System() = default;
 
+		virtual void setup() {};
 		virtual void start() {};
 		virtual void update() {};
 		virtual void fixedUpdate() {}

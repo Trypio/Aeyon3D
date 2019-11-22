@@ -92,13 +92,13 @@ namespace aeyon
 	template<typename T>
 	Component<T> Entity::copyComponent(const Component<T>& component)
 	{
-		return Component<T>(m_world->copyComponent(m_id, component.getID()), m_world);
+		return Component<T>(m_world->copyComponent<T>(m_id, component.getID()), m_world);
 	}
 
 	template<typename T>
 	Component<T> Entity::moveComponent(const Component<T>& component)
 	{
-		return Component<T>(m_world->moveComponent(m_id, component.getOwner().getID(), component.getID()), m_world);
+		return Component<T>(m_world->moveComponent<T>(m_id, component.getOwner().getID(), component.getID()), m_world);
 	}
 
 	template<typename T>

@@ -14,6 +14,7 @@
 #include "Input/Input.hpp"
 #include "Window.hpp"
 #include "ECS/World.hpp"
+#include "Event/EventSystem.hpp"
 
 class aiNode;
 class aiScene;
@@ -23,19 +24,15 @@ namespace aeyon
 	class Engine
 	{
 	protected:
-		std::unique_ptr<World> m_world;
-		std::unique_ptr<Window> m_window;
-		std::unique_ptr<Input> m_input;
-		GraphicsSystem* m_graphics = nullptr;
+		EventSystem eventSystem;
 
-		TextureCache m_textureCache;
-		ShaderCache m_shaderCache;
+		std::unique_ptr<World> world;
+		std::unique_ptr<Window> window;
+		std::unique_ptr<Input> input;
+		GraphicsSystem* graphics = nullptr;
 
-	public:
-		Engine() = default;
-		Engine(const Engine&) = delete;
-		Engine& operator=(const Engine&) = delete;
-		virtual ~Engine() = default;
+		TextureCache textureCache;
+		ShaderCache shaderCache;
 
 		virtual void setup();
 		virtual void start();
@@ -43,9 +40,16 @@ namespace aeyon
 		virtual void fixedUpdate();
 		virtual void lateUpdate();
 
-		void run();
 		Entity loadModel(const std::string& path, Resource<Material> material);
 		void processNode(const aiScene* scene, const aiNode* node, Entity entity, Resource<Material> material);
+
+	public:
+		Engine() = default;
+		Engine(const Engine&) = delete;
+		Engine& operator=(const Engine&) = delete;
+		virtual ~Engine() = default;
+
+		void run();
 	};
 }
 
