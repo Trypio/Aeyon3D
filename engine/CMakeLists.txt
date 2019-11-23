@@ -44,11 +44,14 @@ find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(glm 0.9.8 REQUIRED)
 find_package(assimp REQUIRED)
+find_package(spdlog REQUIRED)
 
 #find_library(ASSIMP_LIBRARY NAMES ${ASSIMP_LIBRARIES} PATH ${ASSIMP_LIBRARY_DIRS})
 
+
+
 set(INCLUDE_DIRS_PUBLIC include ${SDL2_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS})
-set(LINK_LIBS_PUBLIC glad stb_vorbis stb_image pugixml imgui stduuid ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${ASSIMP_LIBRARIES})
+set(LINK_LIBS_PUBLIC glad stb_vorbis stb_image pugixml imgui stduuid spdlog::spdlog_header_only EnumFlags ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${ASSIMP_LIBRARIES})
 
 if(${USE_LUA})
     find_package(Lua 5.3 REQUIRED)
@@ -65,6 +68,7 @@ endif(${USE_LUA})
 add_subdirectory(lib)
 
 add_library(Aeyon3D ${SOURCE_FILES})
+
 
 target_include_directories(Aeyon3D PUBLIC ${INCLUDE_DIRS_PUBLIC})
 target_link_libraries(Aeyon3D PUBLIC ${LINK_LIBS_PUBLIC})

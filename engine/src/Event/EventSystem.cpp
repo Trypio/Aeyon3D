@@ -6,6 +6,8 @@
 #include "Event/QuitEvent.hpp"
 #include "Input/KeyboardEvent.hpp"
 #include <SDL2/SDL.h>
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
 
 namespace aeyon
 {
@@ -14,6 +16,7 @@ namespace aeyon
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
+			ImGui_ImplSDL2_ProcessEvent(&event);
 			if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
 			{
 				KeyboardEvent keyEvent;

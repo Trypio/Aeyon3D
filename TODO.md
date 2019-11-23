@@ -8,17 +8,16 @@
 - Implement cascaded shadow mapping
 
 # Engine
-- Add global settings functionality
-- Add fullscreen functionality
+- Add persisting settings functionality for apps
 
 # Model Importer
 - Implement importing of extern materials
 - Decide on how to handle OBJ files with multiple objects in terms of submeshes
 
 # Entity Component System
+- Implement querying of entities with a specific component
 - Add hierarchy / scene graph functionality to entities
 - Implement a dynamic bitset class
-- Destroy Entity if the last EntityHandle has been destroyed
 
 # Rendering
 - Implement post-processing
@@ -27,7 +26,8 @@
 - Implement HDR rendering and bloom
 
 # GUI
-- Implement a simple debug GUI via imgui
+- Implement displaying and changing ECS components
+- Implement Lua support for UI scripting
 
 # Audio
 - Implement audio functionality via OpenAL

@@ -4,24 +4,23 @@
 
 #include "Graphics/Shader.hpp"
 #include <sstream>
-#include <fstream>
 #include <vector>
-#include <iostream>
 #include "Graphics/Shader.hpp"
 #include "Graphics/ShaderParser.hpp"
-#include "Util.hpp"
 
 namespace aeyon
 {
 
-	aeyon::Shader::Shader(const std::string& sourceCode)
+	Shader::Shader(const std::string& sourceCode)
 	{
 		createPrograms(sourceCode);
 	}
 
-	void aeyon::Shader::createPrograms(const std::string& sourceCode)
+	void Shader::createPrograms(const std::string& sourceCode)
 	{
 		ShaderParser parser(sourceCode);
+
+		m_name = parser.getName();
 
 		std::stringstream headerCode;
 
@@ -44,10 +43,7 @@ namespace aeyon
 		m_properties["_WorldToLight"] = {"_WorldToLight", "mat4", 34, 1};
 		m_properties["_LightToWorld"] = {"_LightToWorld", "mat4", 35, 1};
 
-		GLuint propertyIndex = 36;
-
-		m_name = parser.getName();
-
+		GLuint propertyLocationOffset = 36;
 
 
 		for (const auto& property : parser.getProperties())
@@ -55,9 +51,9 @@ namespace aeyon
 			// TODO: Strip and parse possible array size of property.name
 			std::size_t size = 1;
 
-			m_properties[property.name] = {property.name, property.type, propertyIndex, size};
+			m_properties[property.name] = {property.name, property.type, propertyLocationOffset, size};
 
-			propertyIndex++;
+			propertyLocationOffset++;
 		}
 
 		for (const auto& p : m_properties)
@@ -107,7 +103,7 @@ namespace aeyon
 		return m_programs[passIndex];
 	}
 
-	const std::unordered_map<std::string, Shader::Property>& Shader::getPropertyMap() const
+	const std::unordered_map<std::string, ShaderProperty>& Shader::getPropertyMap() const
 	{
 		return m_properties;
 	}

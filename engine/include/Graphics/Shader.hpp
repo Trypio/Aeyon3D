@@ -7,24 +7,16 @@
 
 #include "ShaderProgram.hpp"
 #include <unordered_map>
+#include "ShaderProperty.hpp"
 
 namespace aeyon
 {
 	class Shader
 	{
-	public:
-		struct Property
-		{
-			std::string name;
-			std::string type;
-			GLuint location;
-			std::size_t size;
-		};
-
 	private:
 		std::string m_name;
 		std::unordered_map<std::uint32_t, ShaderProgram> m_programs;
-		std::unordered_map<std::string, Property> m_properties;
+		std::unordered_map<std::string, ShaderProperty> m_properties;
 
 		void createPrograms(const std::string& sourceCode);
 
@@ -33,7 +25,7 @@ namespace aeyon
 
 		const std::string& getName() const;
 		ShaderProgram& getShaderProgram(std::size_t passIndex);
-		const std::unordered_map<std::string, Property>& getPropertyMap() const;
+		const std::unordered_map<std::string, ShaderProperty>& getPropertyMap() const;
 	};
 }
 

@@ -19,6 +19,8 @@
 #include <assimp/postprocess.h>
 #include "ECS/World.hpp"
 #include "Graphics/MeshRenderer.hpp"
+#include "GUI/GUISystem.hpp"
+#include <spdlog/spdlog.h>
 
 namespace aeyon
 {
@@ -51,19 +53,36 @@ namespace aeyon
 	{
 		SDL_Init(SDL_INIT_VIDEO);
 
+		spdlog::info("Welcome to Aeyon3D");
+
 		auto sdlInput = std::make_unique<SDLInput>();
-		auto sdlWindow = std::make_unique<SDLWindow>("Aeyon3D", SDL_WINDOWPOS_CENTERED,
-																								 SDL_WINDOWPOS_CENTERED, 1024, 768, &eventSystem);
+
+		// Query display mode for fullscreen initialization (or setting custom refresh rate)
+//		SDL_DisplayMode displayMode;
+//		SDL_GetCurrentDisplayMode(0, &displayMode);
+//		std::cout << "Native: " << displayMode.w << " x " << displayMode.h << " @ " << displayMode.refresh_rate << "hz" << "\n";
+
+		auto sdlWindow = std::make_unique<SDLWindow>(
+				"Aeyon3D",
+				SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+				1024, 768,
+				&eventSystem,
+				SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
+		);
+
+		//sdlWindow->setWindowMode(Window::WindowMode::Fullscreen);
 
 
 		world = std::make_unique<World>(&eventSystem);
 
-		std::unique_ptr<GraphicsSystem> glGraphics = std::make_unique<GraphicsSystem>(sdlWindow.get());
+		auto glGraphics = std::make_unique<GraphicsSystem>(sdlWindow.get());
+		auto imgui = std::make_unique<GUISystem>(glGraphics.get());
 
 		graphics = glGraphics.get();
 		world->addSystem(std::make_unique<FirstPersonSystem>(sdlInput.get()));
 		world->addSystem(std::make_unique<CollisionSystem>());
 		world->addSystem(std::move(glGraphics));
+		world->addSystem(std::move(imgui));
 		input = std::move(sdlInput);
 		window = std::move(sdlWindow);
 

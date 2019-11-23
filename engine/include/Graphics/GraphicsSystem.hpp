@@ -61,10 +61,6 @@ namespace aeyon
 		Resource<Texture> m_shadowMap;
 		GLuint m_shadowFBO;
 
-		float m_previousTime;
-		float m_frameTime = 0.0f;
-		int m_numFrames = 0;
-
 
 		void generateRenderInfo(const std::string& shaderName);
 		void setCommonShaderProperties();

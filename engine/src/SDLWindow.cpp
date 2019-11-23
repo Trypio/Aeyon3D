@@ -5,10 +5,17 @@
 #include <Event/WindowResizeEvent.hpp>
 #include "SDLWindow.hpp"
 #include "Event/EventSystem.hpp"
+#include <iostream>
 
 namespace aeyon
 {
-	SDLWindow::SDLWindow(const std::string& title, int x, int y, int width, int height, EventSystem* eventSystem)
+	SDLWindow::SDLWindow(
+			const std::string& title,
+			int x, int y,
+			int width, int height,
+			EventSystem* eventSystem,
+			const Uint32& flags
+			)
 	: m_eventSystem(eventSystem)
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -21,13 +28,13 @@ namespace aeyon
 
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-		SDL_Window* window = SDL_CreateWindow(title.c_str(), x, y, width, height, SDL_WINDOW_OPENGL);
+		SDL_Window* window = SDL_CreateWindow(title.c_str(), x, y, width, height, flags);
 		m_sdlWindow.reset(window);
 
 		m_glContext = SDL_GL_CreateContext(window);
 
-		SDL_GL_SetSwapInterval(1);
-		SDL_SetRelativeMouseMode(SDL_TRUE);
+		setVSyncMode(SyncMode::VSync);
+		//SDL_SetRelativeMouseMode(SDL_TRUE);
 	}
 
 	SDLWindow::~SDLWindow()
@@ -90,6 +97,16 @@ namespace aeyon
 		SDL_SetWindowPosition(m_sdlWindow.get(), x, y);
 	}
 
+	void SDLWindow::setPositionX(int x)
+	{
+		setPosition(x, getPositionY());
+	}
+
+	void SDLWindow::setPositionY(int y)
+	{
+		setPosition(getPositionX(), y);
+	}
+
 	int SDLWindow::getPositionX() const 
 	{
 		int x;
@@ -114,6 +131,16 @@ namespace aeyon
 		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &e.viewportWidth, &e.viewportHeight);
 
 		m_eventSystem->publish(e);
+	}
+
+	void SDLWindow::setWidth(int width)
+	{
+		setSize(width, getHeight());
+	}
+
+	void SDLWindow::setHeight(int height)
+	{
+		setSize(getWidth(), height);
 	}
 
 	int SDLWindow::getWidth() const 
@@ -160,6 +187,7 @@ namespace aeyon
 	{
 		int width;
 		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &width, nullptr);
+
 		return width;
 	}
 
@@ -167,18 +195,37 @@ namespace aeyon
 	{
 		int height;
 		SDL_GL_GetDrawableSize(m_sdlWindow.get(), nullptr, &height);
+
 		return height;
 	}
 
-	void SDLWindow::setSwapInterval(int interval)
+	void SDLWindow::setVSyncMode(SyncMode mode)
 	{
-		// TODO: Error handling here
-		SDL_GL_SetSwapInterval(interval);
+		switch (mode)
+		{
+			case SyncMode::None:
+				SDL_GL_SetSwapInterval(0);
+				break;
+			case SyncMode::VSync:
+				SDL_GL_SetSwapInterval(1);
+				break;
+			case SyncMode::GSync:
+				SDL_GL_SetSwapInterval(-1);
+				break;
+		}
 	}
 
-	int SDLWindow::getSwapInterval() const 
+	Window::SyncMode SDLWindow::getVSyncMode() const
 	{
-		return SDL_GL_GetSwapInterval();
+		switch(SDL_GL_GetSwapInterval())
+		{
+			case 1:
+				return SyncMode::VSync;
+			case -1:
+				return SyncMode::GSync;
+			default:
+				return SyncMode::None;
+		}
 	}
 
 	SDL_GLContext SDLWindow::getGLContext() const
@@ -189,5 +236,47 @@ namespace aeyon
 	SDL_Window* SDLWindow::getSDLWindow()
 	{
 		return m_sdlWindow.get();
+	}
+
+	void SDLWindow::setWindowMode(WindowMode mode)
+	{
+		// TODO: This doesn't work since after chaning to fullscreen display mode, the screen has the resolution of the
+		//       former window size.
+		switch (mode)
+		{
+			case WindowMode::Windowed:
+				SDL_SetWindowFullscreen(m_sdlWindow.get(), 0);
+				break;
+			case WindowMode::WindowedFullscreen:
+				SDL_SetWindowFullscreen(m_sdlWindow.get(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+				break;
+			case WindowMode::Fullscreen:
+				SDL_SetWindowFullscreen(m_sdlWindow.get(), SDL_WINDOW_FULLSCREEN);
+				break;
+		}
+
+		WindowResizeEvent e;
+		SDL_GetWindowSize(m_sdlWindow.get(), &e.width, &e.height);
+		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &e.viewportWidth, &e.viewportHeight);
+
+		m_eventSystem->publish(e);
+	}
+
+	Window::WindowMode SDLWindow::getWindowMode() const
+	{
+		Uint32 flags = SDL_GetWindowFlags(m_sdlWindow.get());
+
+		if ((flags & SDL_WINDOW_FULLSCREEN) != 0 && (flags & (SDL_WINDOW_FULLSCREEN_DESKTOP & ~SDL_WINDOW_FULLSCREEN)) == 0)
+		{
+			return WindowMode::Fullscreen;
+		}
+		else if ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
+		{
+			return WindowMode::WindowedFullscreen;
+		}
+		else
+		{
+			return WindowMode::Windowed;
+		}
 	}
 }

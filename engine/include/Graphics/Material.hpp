@@ -33,10 +33,10 @@ namespace aeyon
 	private:
 		struct Parameter
 		{
-			Parameter(Shader::Property shaderProperty, ParameterValue value)
+			Parameter(ShaderProperty shaderProperty, ParameterValue value)
 					: shaderProperty(std::move(shaderProperty)), value(std::move(value)) {}
 
-			Shader::Property shaderProperty;
+			ShaderProperty shaderProperty;
 			ParameterValue value;
 		};
 

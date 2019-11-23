@@ -14,6 +14,21 @@ namespace aeyon
 	class Window
 	{
 	public:
+		enum class SyncMode
+		{
+			None,
+			VSync,
+			GSync
+		};
+
+		enum class WindowMode
+		{
+			Windowed,
+			WindowedFullscreen,
+			Fullscreen
+		};
+
+
 		virtual ~Window() = default;
 
 		virtual void show() = 0;
@@ -32,10 +47,14 @@ namespace aeyon
 		virtual std::string getTitle() const = 0;
 
 		virtual void setPosition(int x, int y) = 0;
+		virtual void setPositionX(int x) = 0;
+		virtual void setPositionY(int y) = 0;
 		virtual int getPositionX() const = 0;
 		virtual int getPositionY() const = 0;
 
 		virtual void setSize(int width, int height) = 0;
+		virtual void setWidth(int width) = 0;
+		virtual void setHeight(int height) = 0;
 		virtual int getWidth() const = 0;
 		virtual int getHeight() const = 0;
 
@@ -45,8 +64,12 @@ namespace aeyon
 
 		virtual int getViewportWidth() const = 0;
 		virtual int getViewportHeight() const = 0;
-		virtual void setSwapInterval(int interval) = 0;
-		virtual int getSwapInterval() const = 0;
+
+		virtual void setVSyncMode(SyncMode mode) = 0;
+		virtual SyncMode getVSyncMode() const = 0;
+
+		virtual void setWindowMode(WindowMode mode) = 0;
+		virtual WindowMode getWindowMode() const = 0;
 	};
 }
 

@@ -21,7 +21,7 @@ namespace aeyon
 	{
 		for (auto& system : m_systems)
 		{
-			system->start();
+			system->setup();
 		}
 	}
 

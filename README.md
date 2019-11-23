@@ -43,6 +43,8 @@ architecture.
 - Assimp (http://www.assimp.org/)
 - Dear ImGui (https://github.com/ocornut/imgui)
 - Catch2 (https://github.com/catchorg/Catch2)
+- spdlog (https://github.com/gabime/spdlog)
+- enum-flags (https://github.com/grisumbras/enum-flags)
 - pugixml (https://pugixml.org/)
 - stb_image, stb_vorbis (https://github.com/nothings/stb)
 - Lua (https://www.lua.org/)
