@@ -2,23 +2,23 @@
 //
 //
 
-#include "ECS/ECRegister.hpp"
+#include "ECS/ECRegistry.hpp"
 
 namespace aeyon
 {
-	EntityID ECRegister::getEntityID(const ComponentID& componentID) const
+	EntityID ECRegistry::getEntityID(const ComponentID& componentID) const
 	{
 		const auto it = m_componentToEntity.find(componentID);
 		return (it != m_componentToEntity.end()) ? it->second : EntityID();
 	}
 
-	ComponentID ECRegister::getComponentID(const EntityID& entityID) const
+	ComponentID ECRegistry::getComponentID(const EntityID& entityID) const
 	{
 		const auto it = m_entityToComponent.find(entityID);
 		return (it != m_componentToEntity.end()) ? it->second : ComponentID();
 	}
 
-	bool ECRegister::insert(const EntityID& entityID, const ComponentID& componentID)
+	bool ECRegistry::insert(const EntityID& entityID, const ComponentID& componentID)
 	{
 		auto etcIt = m_entityToComponent.find(entityID);
 		auto cteIt = m_componentToEntity.find(componentID);
@@ -33,7 +33,7 @@ namespace aeyon
 		}
 	}
 
-	void ECRegister::eraseEntityID(const EntityID& entityID)
+	void ECRegistry::eraseEntityID(const EntityID& entityID)
 	{
 		const auto it = m_entityToComponent.find(entityID);
 		if (it != m_entityToComponent.end())
@@ -43,7 +43,7 @@ namespace aeyon
 		}
 	}
 
-	void ECRegister::eraseComponentID(const ComponentID& componentID)
+	void ECRegistry::eraseComponentID(const ComponentID& componentID)
 	{
 		const auto it = m_componentToEntity.find(componentID);
 		if (it != m_componentToEntity.end())

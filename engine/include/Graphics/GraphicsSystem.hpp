@@ -8,7 +8,6 @@
 #include "ECS/System.hpp"
 #include "glad/glad.h"
 #include "Graphics/Texture.hpp"
-#include "ECS/Entity.hpp"
 #include "Resource.hpp"
 #include "Graphics/Frustum.hpp"
 #include "Time.hpp"
@@ -30,15 +29,15 @@ namespace aeyon
 			Resource<Material> material;
 			std::vector<GLuint> vaos;
 			std::vector<GLuint> ebos;
-			std::vector<Component<Transform>> transforms;
+			std::vector<Transform*> transforms;
 			std::vector<GLsizei> numTriangles;
 			std::vector<GLint> offsets;
 		};
 
 		struct CameraInfo
 		{
-			Component<Transform> transform;
-			Component<Camera> camera;
+			Transform* transform;
+			Camera* camera;
 			Frustum frustum;
 			glm::mat4 viewMatrix = glm::mat4(1.0f);
 			glm::mat4 viewMatrixInverse = glm::mat4(1.0f);
@@ -51,12 +50,12 @@ namespace aeyon
 		const int ShadowTexHeight = 2048;
 
 		SDLWindow* m_window;
-		Entity m_skyBox;
+		EntityID m_skyBox;
 
-		std::vector<Entity> m_lights;
+		std::vector<EntityID> m_lights;
 		std::vector<CameraInfo> m_cameras;
 		std::unordered_map<Material*, Batch> m_batches;
-		std::vector<Entity> m_scene;
+		std::vector<EntityID> m_scene;
 
 		Resource<Texture> m_shadowMap;
 		GLuint m_shadowFBO;
@@ -72,7 +71,7 @@ namespace aeyon
 		explicit GraphicsSystem(SDLWindow* window);
 		~GraphicsSystem() override;
 
-		void setSkybox(Entity skybox);
+		void setSkybox(EntityID skybox);
 
 		SDLWindow* getWindow();
 

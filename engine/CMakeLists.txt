@@ -34,7 +34,7 @@ set(SOURCE_FILES
         src/Graphics/Texture.cpp
         src/Time.cpp
         src/Transform.cpp
-        src/ECS/ECRegister.cpp
+        src/ECS/ECRegistry.cpp
         src/Graphics/ShaderParser.cpp
         src/Graphics/PixelFormat.cpp
         src/Graphics/PropertyVisitor.cpp

@@ -35,8 +35,9 @@ namespace aeyon
 
 			for (const auto& entity : getEntities())
 			{
-				transforms.push_back(entity.getComponent<Transform>().get());
-				colliders.push_back(entity.getComponent<BoxCollider>().get());
+
+				transforms.push_back(m_world->getComponent<Transform>(m_world->getComponentID<Transform>(entity)));
+				colliders.push_back(m_world->getComponent<BoxCollider>(m_world->getComponentID<BoxCollider>(entity)));
 			}
 		}
 	};

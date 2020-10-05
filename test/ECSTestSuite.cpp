@@ -11,7 +11,7 @@
 
 TEST_CASE("entities can be created and destroyed", "[ecs]")
 {
-	aeyon::World world;
+	aeyon::World world(nullptr);
 
 	SECTION("the default entity is invalid and has a nil ID")
 	{
@@ -47,7 +47,7 @@ TEST_CASE("entities can be created and destroyed", "[ecs]")
 
 TEST_CASE("components can be added to entities", "[ecs]")
 {
-	aeyon::World world;
+	aeyon::World world(nullptr);
 
 	aeyon::Entity entity = world.createEntity();
 	auto component = entity.addComponent<aeyon::Transform>();
@@ -74,7 +74,7 @@ TEST_CASE("components can be added to entities", "[ecs]")
 
 TEST_CASE("components can be queried for non-assigned component types")
 {
-	aeyon::World world;
+	aeyon::World world(nullptr);
 	aeyon::Entity entity = world.createEntity();
 
 	REQUIRE(!entity.hasComponent<aeyon::Transform>());
@@ -89,7 +89,7 @@ TEST_CASE("components can be queried for non-assigned component types")
 
 TEST_CASE("components can be removed from entities", "[ecs]")
 {
-	aeyon::World world;
+	aeyon::World world(nullptr);
 
 	aeyon::Entity entity = world.createEntity();
 	auto component = entity.addComponent<aeyon::Transform>();
@@ -107,7 +107,7 @@ TEST_CASE("components can be removed from entities", "[ecs]")
 
 TEST_CASE("components can be copied from one entity to another", "[ecs]")
 {
-	aeyon::World world;
+	aeyon::World world(nullptr);
 	aeyon::Entity src = world.createEntity();
 	const glm::vec3 testPos(42.0f);
 	auto srcHandle = src.addComponent<aeyon::Transform>();
@@ -136,7 +136,7 @@ TEST_CASE("components can be copied from one entity to another", "[ecs]")
 
 TEST_CASE("components can be moved from one entity to another", "[ecs]")
 {
-	aeyon::World world;
+	aeyon::World world(nullptr);
 	aeyon::Entity src = world.createEntity();
 	const glm::vec3 testPos(42.0f);
 	auto srcHandle = src.addComponent<aeyon::Transform>();

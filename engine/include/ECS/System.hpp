@@ -7,7 +7,9 @@
 
 #include <vector>
 #include <algorithm>
-#include "Entity.hpp"
+#include "Types.hpp"
+#include "EntityID.hpp"
+#include "ComponentTypeIndex.hpp"
 
 namespace aeyon
 {
@@ -26,7 +28,7 @@ namespace aeyon
 		World* m_world = nullptr;
 		Signature m_signatureAND;
 		Signature m_signatureOR;
-		std::vector<Entity> m_entities;
+		std::vector<EntityID> m_entities;
 
 	public:
 		virtual ~System() = default;
@@ -39,9 +41,9 @@ namespace aeyon
 
 		void registerWorld(World* world);
 
-		void registerEntity(const Entity& entity);
+		void registerEntity(const EntityID& entity);
 		void unregisterEntity(const EntityID& entity);
-    const std::vector<Entity>& getEntities() const;
+    const std::vector<EntityID>& getEntities() const;
 
     /**
      * Adds a component type to the list of required components that an entity needs to have to be handled by this

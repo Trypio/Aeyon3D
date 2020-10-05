@@ -2,8 +2,8 @@
 //
 //
 
-#ifndef AEYON3D_ECREGISTER_HPP
-#define AEYON3D_ECREGISTER_HPP
+#ifndef AEYON3D_ECREGISTRY_HPP
+#define AEYON3D_ECREGISTRY_HPP
 
 #include <unordered_map>
 #include <array>
@@ -16,7 +16,7 @@ namespace aeyon
 /**
  * A simple bidirectional map which maps entity to components and vice-versa
  */
-	class ECRegister
+	class ECRegistry
 	{
 	private:
 		std::unordered_map<EntityID, ComponentID> m_entityToComponent;

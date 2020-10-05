@@ -59,20 +59,20 @@ namespace aeyon
 		}
 	}
 
-	Entity World::createEntity()
+	EntityID World::createEntity()
 	{
 		auto id = EntityID::generate();
 
 		m_entityMasks[id] = Signature();
 
-		return Entity(id, this);
+		return id;
 	}
 
 	void World::destroyEntity(const EntityID& entityID)
 	{
-		for (std::size_t i = 0; i < m_ecRegisters.size(); i++)
+		for (std::size_t i = 0; i < m_ecRegistries.size(); i++)
 		{
-			auto& map = m_ecRegisters[i];
+			auto& map = m_ecRegistries[i];
 			const auto componentID = map.getComponentID(entityID);
 			map.eraseEntityID(entityID);
 			if (m_componentStores[i] != nullptr)
@@ -90,7 +90,7 @@ namespace aeyon
 		{
 			if ((system->getSignatureAND() & ~p.second).none() || (system->getSignatureOR() & p.second).any())
 			{
-				system->registerEntity(Entity());
+				system->registerEntity(p.first);
 			}
 		}
 
@@ -157,7 +157,7 @@ namespace aeyon
 		}
 	}
 
-	bool World::isEntityIDValid(const EntityID& entityID) const
+	bool World::isEntityValid(const EntityID& entityID) const
 	{
 		const auto it = m_entityMasks.find(entityID);
 

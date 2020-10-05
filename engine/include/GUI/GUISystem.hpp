@@ -30,6 +30,7 @@ namespace aeyon
 		explicit GUISystem(GraphicsSystem* graphics)
 		: m_graphics(graphics), m_window(graphics->getWindow())
 		{
+			requireComponent<Transform>();
 			// Init Gui
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
@@ -75,48 +76,43 @@ namespace aeyon
 
 			ImGui::End();
 
-			static float pos[3];
+
 
 			if(ImGui::Begin("World"))
 			{
 				if (ImGui::CollapsingHeader("Entities"))
 				{
-					if (ImGui::TreeNode("nanosuit"))
+					for (std::size_t i = 0; i < getEntities().size(); i++)
 					{
-						if (ImGui::TreeNode("Transform"))
+						if (ImGui::TreeNode((std::string("E_") + std::to_string(i)).c_str()))
 						{
-							if (ImGui::TreeNode("Position"))
+							if (ImGui::TreeNode("Transform"))
 							{
-								ImGui::InputFloat3("##nanosuit-pos", pos);
+								if (ImGui::TreeNode("Position"))
+								{
+									ImGui::TreePop();
+								}
+
+								if (ImGui::TreeNode("Rotation"))
+								{
+									ImGui::TreePop();
+								}
+
+								if (ImGui::TreeNode("Scale"))
+								{
+									ImGui::TreePop();
+								}
+
 								ImGui::TreePop();
 							}
 
-							if (ImGui::TreeNode("Rotation"))
+							if (ImGui::TreeNode("MeshRenderer"))
 							{
-								ImGui::InputFloat3("##nanosuit-rot", pos);
-								ImGui::TreePop();
-							}
-
-							if (ImGui::TreeNode("Scale"))
-							{
-								ImGui::InputFloat3("##nanosuit-scale", pos);
 								ImGui::TreePop();
 							}
 							ImGui::TreePop();
+							ImGui::Separator();
 						}
-
-						if (ImGui::TreeNode("MeshRenderer"))
-						{
-							ImGui::TreePop();
-						}
-						ImGui::TreePop();
-						ImGui::Separator();
-					}
-
-					if (ImGui::TreeNode("Ground"))
-					{
-						ImGui::TreePop();
-						ImGui::Separator();
 					}
 				}
 			}

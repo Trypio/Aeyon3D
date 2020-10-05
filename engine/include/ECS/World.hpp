@@ -13,12 +13,11 @@
 #include "Types.hpp"
 #include "ComponentTypeIndex.hpp"
 #include <memory>
-#include "ECRegister.hpp"
+#include "ECRegistry.hpp"
 
 namespace aeyon
 {
 	class System;
-	class Entity;
 	class EventSystem;
 
 	/**
@@ -28,9 +27,6 @@ namespace aeyon
 	 */
 	class World
 	{
-		friend class Entity;
-		template <typename T> friend class Component;
-
 	private:
 		/**
 		 * List of systems in registration/update order
@@ -52,7 +48,7 @@ namespace aeyon
 		 * Vector of bidirectional maps which keep track of entities and their mapped components and vice-versa. The
 		 * index represents the TypeIndex of the component and can be retrieved via GetComponentTypeID<T>().
 		 */
-		std::array<ECRegister, NumComponentTypes> m_ecRegisters;
+		std::array<ECRegistry, NumComponentTypes> m_ecRegistries;
 
 		/**
 		 * Retrieves the component store which is assigned to the given type. A new component store of given type is
@@ -64,46 +60,13 @@ namespace aeyon
 		void addEntityToSystems(const EntityID& entityID, std::size_t typeID, const Signature& oldMask);
 		void removeEntityFromSystems(const EntityID& entityID, std::size_t typeID, const Signature& oldMask);
 
-		void destroyEntity(const EntityID& entityID);
-		bool isEntityIDValid(const EntityID& entityID) const;
-
-		template <typename T, typename ...P>
-		ComponentID addComponent(const EntityID& entityID, P&&... parameters);
-
-		template <typename T>
-		ComponentID copyComponent(const EntityID& entityID, const ComponentID& componentID);
-
-		template <typename T>
-		ComponentID moveComponent(const EntityID& dstEntityID, const EntityID& srcEntityID, const ComponentID& componentID);
-
-		template <typename T>
-		void removeComponent(const EntityID& entityID);
-
-		template <typename T>
-		bool hasComponent(const EntityID& entityID) const;
-
-		template <typename T>
-		ComponentID getComponentID(const EntityID& entityID) const;
-
-		template <typename T>
-		T* getComponent(const ComponentID& componentID);
-
-		template <typename T>
-		const T* getComponent(const ComponentID& componentID) const;
-
-		template <typename T>
-		EntityID getOwner(const ComponentID& componentID) const;
-
-		template <typename T>
-		bool isComponentIDValid(const ComponentID& componentID) const;
-
 	public:
 		explicit World(EventSystem* eventSystem);
 		World(const World&) = delete;
 		World& operator=(const World&) = delete;
 		~World();
 
-	  /*
+	  /**
 		 * World event system
 	   */
 		EventSystem* eventSystem;
@@ -113,7 +76,7 @@ namespace aeyon
 		 */
 		void setup();
 
-		/*
+		/**
 		 * Should be called before the first update, but after instantiation
 		 */
 		void start();
@@ -136,12 +99,58 @@ namespace aeyon
 		/**
 		 * Create a new entity with no components attached to it
 		 */
-		Entity createEntity();
+		EntityID createEntity();
+
+		/**
+		 * Destroys the given entity and all of its components
+		 */
+		void destroyEntity(const EntityID& entityID);
+
+		/**
+		 * Checks if the given entity exists within the world
+		 */
+		bool isEntityValid(const EntityID& entityID) const;
 
 		/**
 		 * Adds a system to the world. System methods are guaranteed to be called in the order they were added to the world.
 		 */
 		void addSystem(std::unique_ptr<System> system);
+
+		/**
+		 * Creates and adds a new component to the given entity
+		 */
+		template <typename T, typename ...P>
+		ComponentID addComponent(const EntityID& entityID, P&&... parameters);
+
+		/**
+		 *
+		 */
+		template <typename T>
+		ComponentID copyComponent(const EntityID& dstEntityID, const EntityID& srcEntityID);
+
+		template <typename T>
+		ComponentID moveComponent(const EntityID& dstEntityID, const EntityID& srcEntityID);
+
+		template <typename T>
+		void removeComponent(const EntityID& entityID);
+
+		template <typename T>
+		bool hasComponent(const EntityID& entityID) const;
+
+		template <typename T>
+		ComponentID getComponentID(const EntityID& entityID) const;
+
+		template <typename T>
+		T* getComponent(const ComponentID& componentID);
+
+		template <typename T>
+		const T* getComponent(const ComponentID& componentID) const;
+
+		template <typename T>
+		EntityID getOwner(const ComponentID& componentID) const;
+
+		template <typename T>
+		bool isComponentIDValid(const ComponentID& componentID) const;
 	};
 
 	// Template method implementations
@@ -156,7 +165,7 @@ namespace aeyon
 		auto instance = store->createComponent(std::forward<P>(parameters)...);
 		auto typeIndex = GetComponentTypeIndex<T>();
 
-		m_ecRegisters[typeIndex].insert(entityID, instance.id);
+		m_ecRegistries[typeIndex].insert(entityID, instance.id);
 
 		Signature oldMask = m_entityMasks[entityID];
 		m_entityMasks[entityID].set(typeIndex, true);
@@ -167,28 +176,27 @@ namespace aeyon
 	}
 
 	template <typename T>
-	ComponentID World::copyComponent(const EntityID& entityID, const ComponentID& componentID)
+	ComponentID World::copyComponent(const EntityID& dstEntityID, const EntityID& srcEntityID)
 	{
-		if (hasComponent<T>(entityID))
-			return ComponentID();
+		if (hasComponent<T>(dstEntityID))
+			return removeComponent<T>(dstEntityID);
 
 		auto store = getComponentStoreForType<T>();
-		auto instance = store->copyComponent(componentID);
+		auto instance = store->copyComponent(getComponentID<T>(srcEntityID));
 		auto typeIndex = GetComponentTypeIndex<T>();
 
-		m_ecRegisters[typeIndex].insert(entityID, instance.id);
+		m_ecRegistries[typeIndex].insert(dstEntityID, instance.id);
 
-		Signature oldMask = m_entityMasks[entityID];
-		m_entityMasks[entityID].set(typeIndex, true);
+		Signature oldMask = m_entityMasks[dstEntityID];
+		m_entityMasks[dstEntityID].set(typeIndex, true);
 
-		addEntityToSystems(entityID, typeIndex, oldMask);
+		addEntityToSystems(dstEntityID, typeIndex, oldMask);
 
 		return instance.id;
 	}
 
 	template <typename T>
-	ComponentID World::moveComponent(const EntityID& dstEntityID, const EntityID& srcEntityID,
-			const ComponentID& componentID)
+	ComponentID World::moveComponent(const EntityID& dstEntityID, const EntityID& srcEntityID)
 	{
 		if (hasComponent<T>(dstEntityID) || !hasComponent<T>(srcEntityID))
 			return ComponentID();
@@ -199,13 +207,13 @@ namespace aeyon
 		Signature oldMask = m_entityMasks[srcEntityID];
 		m_entityMasks[srcEntityID].set(typeIndex, false);
 		removeEntityFromSystems(srcEntityID, typeIndex, oldMask);
-		m_ecRegisters[typeIndex].eraseEntityID(srcEntityID);
+		m_ecRegistries[typeIndex].eraseEntityID(srcEntityID);
 
 		// Add data about new entity
 		oldMask = m_entityMasks[dstEntityID];
 		m_entityMasks[dstEntityID].set(typeIndex, true);
 		addEntityToSystems(dstEntityID, typeIndex, oldMask);
-		m_ecRegisters[typeIndex].insert(dstEntityID, componentID);
+		m_ecRegistries[typeIndex].insert(dstEntityID, componentID);
 
 		return componentID;
 	}
@@ -216,7 +224,7 @@ namespace aeyon
 		if (!hasComponent<T>(entityID))
 			return;
 
-		auto componentID = m_ecRegisters[GetComponentTypeIndex<T>()].getComponentID(entityID);
+		auto componentID = m_ecRegistries[GetComponentTypeIndex<T>()].getComponentID(entityID);
 		auto store = getComponentStoreForType<T>();
 		auto instance = store->getComponentInstance(componentID);
 
@@ -227,14 +235,14 @@ namespace aeyon
 
 		store->destroyComponent(componentID);
 
-		m_ecRegisters[GetComponentTypeIndex<T>()].eraseEntityID(entityID);
+		m_ecRegistries[GetComponentTypeIndex<T>()].eraseEntityID(entityID);
 	}
 
 	template<typename T>
 	ComponentID World::getComponentID(const EntityID& entityID) const
 	{
 		auto componentIndex = GetComponentTypeIndex<T>();
-		return m_ecRegisters[componentIndex].getComponentID(entityID);
+		return m_ecRegistries[componentIndex].getComponentID(entityID);
 	}
 
 	template<typename T>
@@ -259,7 +267,7 @@ namespace aeyon
 	template <typename T>
 	EntityID World::getOwner(const ComponentID& componentID) const
 	{
-		return m_ecRegisters[GetComponentTypeIndex<T>()].getEntityID(componentID);
+		return m_ecRegistries[GetComponentTypeIndex<T>()].getEntityID(componentID);
 	}
 
 	template <typename T>
