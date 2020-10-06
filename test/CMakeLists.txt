@@ -8,4 +8,5 @@ add_executable(Aeyon3DTest ${SOURCE_FILES})
 add_subdirectory(lib)
 
 target_compile_features(Aeyon3DTest PUBLIC cxx_std_17)
-target_link_libraries(Aeyon3DTest PUBLIC Aeyon3D catch)
+#target_link_libraries(Aeyon3DTest PUBLIC Aeyon3D catch)
+target_link_libraries(Aeyon3DTest PUBLIC catch)

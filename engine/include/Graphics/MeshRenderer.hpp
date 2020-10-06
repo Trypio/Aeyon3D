@@ -5,14 +5,14 @@
 #ifndef AEYON3D_MESHRENDERER_HPP
 #define AEYON3D_MESHRENDERER_HPP
 
-#include "ECS/ComponentTypeIndex.hpp"
+#include "Component.hpp"
 #include "Resource.hpp"
 #include "Mesh.hpp"
 #include "Material.hpp"
 
 namespace aeyon
 {
-	class MeshRenderer : public ComponentTypeIndex<MeshRenderer>
+	class MeshRenderer : public Component
 	{
 	private:
 		Resource<Mesh> m_mesh;

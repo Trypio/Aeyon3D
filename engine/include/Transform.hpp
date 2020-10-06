@@ -5,7 +5,7 @@
 #ifndef AEYON3D_TRANSFORM_HPP
 #define AEYON3D_TRANSFORM_HPP
 
-#include "ECS/ComponentTypeIndex.hpp"
+#include "Component.hpp"
 #include "Space.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -13,7 +13,7 @@
 
 namespace aeyon
 {
-	class Transform : public ComponentTypeIndex<Transform>
+	class Transform : public Component
 	{
 	private:
 		glm::vec3 m_position;

@@ -5,13 +5,13 @@
 #ifndef AEYON3D_RENDERER_HPP
 #define AEYON3D_RENDERER_HPP
 
-#include "ECS/System.hpp"
 #include "glad/glad.h"
 #include "Graphics/Texture.hpp"
-#include "ECS/Entity.hpp"
+#include "Actor.hpp"
 #include "Resource.hpp"
 #include "Graphics/Frustum.hpp"
 #include "Time.hpp"
+#include "System.hpp"
 
 namespace aeyon
 {
@@ -37,8 +37,8 @@ namespace aeyon
 
 		struct CameraInfo
 		{
-			Component<Transform> transform;
-			Component<Camera> camera;
+			Transform* transform;
+			Camera* camera;
 			Frustum frustum;
 			glm::mat4 viewMatrix = glm::mat4(1.0f);
 			glm::mat4 viewMatrixInverse = glm::mat4(1.0f);
@@ -51,12 +51,12 @@ namespace aeyon
 		const int ShadowTexHeight = 2048;
 
 		SDLWindow* m_window;
-		Entity m_skyBox;
+		Actor m_skyBox;
 
-		std::vector<Entity> m_lights;
+		std::vector<Actor> m_lights;
 		std::vector<CameraInfo> m_cameras;
 		std::unordered_map<Material*, Batch> m_batches;
-		std::vector<Entity> m_scene;
+		std::vector<Actor> m_scene;
 
 		Resource<Texture> m_shadowMap;
 		GLuint m_shadowFBO;
@@ -70,9 +70,8 @@ namespace aeyon
 
 	public:
 		explicit GraphicsSystem(SDLWindow* window);
-		~GraphicsSystem() override;
 
-		void setSkybox(Entity skybox);
+		void setSkybox(Actor skybox);
 
 		SDLWindow* getWindow();
 

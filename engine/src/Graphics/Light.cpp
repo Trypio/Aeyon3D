@@ -7,7 +7,7 @@
 namespace aeyon
 {
 	Light::Light()
-			: m_type(Type::Directional), m_renderMode(RenderMode::Auto), m_color(Color::White), m_intensity(1.0f),
+			: m_type(Type::Directional), m_color(Color::White), m_intensity(1.0f),
 				m_range(10.0f), m_spotAngle(30.0f)
 	{
 	}
@@ -15,11 +15,6 @@ namespace aeyon
 	void Light::setType(Light::Type type)
 	{
 		m_type = type;
-	}
-
-	void Light::setRenderMode(Light::RenderMode renderMode)
-	{
-		m_renderMode = renderMode;
 	}
 
 	void Light::setColor(Color color)
@@ -47,11 +42,6 @@ namespace aeyon
 		return m_type;
 	}
 
-	Light::RenderMode Light::getRenderMode() const
-	{
-		return m_renderMode;
-	}
-
 	Color Light::getColor() const
 	{
 		return m_color;
@@ -71,6 +61,4 @@ namespace aeyon
 	{
 		return m_spotAngle;
 	}
-
-
 }

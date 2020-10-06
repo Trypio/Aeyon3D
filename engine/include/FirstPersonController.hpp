@@ -5,11 +5,11 @@
 #ifndef AEYON3D_CHARACTERCONTROLLER_HPP
 #define AEYON3D_CHARACTERCONTROLLER_HPP
 
-#include "ECS/ComponentTypeIndex.hpp"
+#include "Component.hpp"
 
 namespace aeyon
 {
-	class FirstPersonController : public ComponentTypeIndex<FirstPersonController>
+	class FirstPersonController : public Component
 	{
 	public:
 		float m_moveSpeed;

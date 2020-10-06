@@ -4,10 +4,6 @@ project(Aeyon3D LANGUAGES C CXX)
 set (CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES
-        src/ECS/ComponentTypeIndex.cpp
-        src/ECS/Entity.cpp
-        src/ECS/System.cpp
-        src/ECS/World.cpp
         src/Event/Event.cpp
         src/Event/EventSystem.cpp
         src/Input/SDLInput.cpp
@@ -34,7 +30,6 @@ set(SOURCE_FILES
         src/Graphics/Texture.cpp
         src/Time.cpp
         src/Transform.cpp
-        src/ECS/ECRegister.cpp
         src/Graphics/ShaderParser.cpp
         src/Graphics/PixelFormat.cpp
         src/Graphics/PropertyVisitor.cpp
