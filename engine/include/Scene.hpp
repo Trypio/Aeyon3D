@@ -5,7 +5,7 @@
 #ifndef AEYON3D_SCENE_HPP
 #define AEYON3D_SCENE_HPP
 
-#include "ECS/Entity.hpp"
+#include "Actor.hpp"
 #include <vector>
 
 namespace aeyon

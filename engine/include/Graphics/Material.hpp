@@ -12,6 +12,7 @@
 #include "Texture.hpp"
 #include <variant>
 #include <vector>
+#include <stdexcept>
 
 namespace aeyon
 {

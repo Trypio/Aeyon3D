@@ -11,7 +11,7 @@
 namespace aeyon
 {
 	/**
-	 * Represents a 3D light
+	 * Represents a light in a 3D environment
 	 */
 	class Light : public Component
 	{

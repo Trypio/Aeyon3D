@@ -30,7 +30,7 @@ namespace aeyon
 			Resource<Material> material;
 			std::vector<GLuint> vaos;
 			std::vector<GLuint> ebos;
-			std::vector<Component<Transform>> transforms;
+			std::vector<Transform*> transforms;
 			std::vector<GLsizei> numTriangles;
 			std::vector<GLint> offsets;
 		};
