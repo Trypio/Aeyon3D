@@ -45,8 +45,8 @@ find_package(spdlog REQUIRED)
 
 
 
-set(INCLUDE_DIRS_PUBLIC include ${SDL2_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS})
-set(LINK_LIBS_PUBLIC glad stb_vorbis stb_image pugixml imgui stduuid spdlog::spdlog_header_only EnumFlags ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${ASSIMP_LIBRARIES})
+set(INCLUDE_DIRS_PUBLIC include SDL2::SDL2 ${ASSIMP_INCLUDE_DIRS})
+set(LINK_LIBS_PUBLIC glad stb_vorbis stb_image pugixml imgui stduuid spdlog::spdlog_header_only EnumFlags SDL2::SDL2 ${OPENGL_gl_LIBRARY} ${ASSIMP_LIBRARIES})
 
 if(${USE_LUA})
     find_package(Lua 5.3 REQUIRED)

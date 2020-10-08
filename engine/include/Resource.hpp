@@ -7,6 +7,7 @@
 
 #include <Types.hpp>
 #include <memory>
+#include <stdexcept>
 
 namespace aeyon
 {
