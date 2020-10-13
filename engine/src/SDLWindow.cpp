@@ -2,9 +2,7 @@
 //
 //
 
-#include <Event/WindowResizeEvent.hpp>
 #include "SDLWindow.hpp"
-#include "Event/EventSystem.hpp"
 #include <iostream>
 
 namespace aeyon
@@ -13,10 +11,8 @@ namespace aeyon
 			const std::string& title,
 			int x, int y,
 			int width, int height,
-			EventSystem* eventSystem,
 			const Uint32& flags
 			)
-	: m_eventSystem(eventSystem)
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -33,7 +29,7 @@ namespace aeyon
 
 		m_glContext = SDL_GL_CreateContext(window);
 
-		setVSyncMode(SyncMode::VSync);
+		setVSync(true);
 		//SDL_SetRelativeMouseMode(SDL_TRUE);
 	}
 
@@ -125,12 +121,14 @@ namespace aeyon
 	{
 		SDL_SetWindowSize(m_sdlWindow.get(), width, height);
 
+		/*
 		WindowResizeEvent e;
 		e.width = width;
 		e.height = height;
 		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &e.viewportWidth, &e.viewportHeight);
 
 		m_eventSystem->publish(e);
+		 */
 	}
 
 	void SDLWindow::setWidth(int width)
@@ -199,33 +197,14 @@ namespace aeyon
 		return height;
 	}
 
-	void SDLWindow::setVSyncMode(SyncMode mode)
+	void SDLWindow::setVSync(bool active)
 	{
-		switch (mode)
-		{
-			case SyncMode::None:
-				SDL_GL_SetSwapInterval(0);
-				break;
-			case SyncMode::VSync:
-				SDL_GL_SetSwapInterval(1);
-				break;
-			case SyncMode::GSync:
-				SDL_GL_SetSwapInterval(-1);
-				break;
-		}
+		SDL_GL_SetSwapInterval(active ? 1 : 0);
 	}
 
-	Window::SyncMode SDLWindow::getVSyncMode() const
+	bool SDLWindow::isVSyncEnabled() const
 	{
-		switch(SDL_GL_GetSwapInterval())
-		{
-			case 1:
-				return SyncMode::VSync;
-			case -1:
-				return SyncMode::GSync;
-			default:
-				return SyncMode::None;
-		}
+		return SDL_GL_GetSwapInterval();
 	}
 
 	SDL_GLContext SDLWindow::getGLContext() const
@@ -240,8 +219,6 @@ namespace aeyon
 
 	void SDLWindow::setWindowMode(WindowMode mode)
 	{
-		// TODO: This doesn't work since after chaning to fullscreen display mode, the screen has the resolution of the
-		//       former window size.
 		switch (mode)
 		{
 			case WindowMode::Windowed:
@@ -255,11 +232,13 @@ namespace aeyon
 				break;
 		}
 
+		/*
 		WindowResizeEvent e;
 		SDL_GetWindowSize(m_sdlWindow.get(), &e.width, &e.height);
 		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &e.viewportWidth, &e.viewportHeight);
 
 		m_eventSystem->publish(e);
+		 */
 	}
 
 	Window::WindowMode SDLWindow::getWindowMode() const

@@ -5,7 +5,7 @@
 #ifndef AEYON3D_EVENT_HPP
 #define AEYON3D_EVENT_HPP
 
-#include <cstdint>
+#include "UUID.hpp"
 
 namespace aeyon
 {
@@ -14,21 +14,13 @@ namespace aeyon
 	 */
 	class Event
 	{
-	public:
-		using ID = std::uint32_t;
-
 	private:
-		static ID currentID;
-
-		static ID getNextID();
-
-		ID m_id;
+		UUID m_guid = UUID::generate();
 
 	public:
-		Event();
 		virtual ~Event() = default;
 
-		ID getID() const;
+		UUID getGUID() const;
 	};
 }
 

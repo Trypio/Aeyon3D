@@ -5,7 +5,7 @@
 #ifndef AEYON3D_FIRSTPERSONSYSTEM_HPP
 #define AEYON3D_FIRSTPERSONSYSTEM_HPP
 
-#include "ECS/System.hpp"
+#include "System.hpp"
 #include "Input/Input.hpp"
 #include "Transform.hpp"
 #include "FirstPersonController.hpp"
@@ -17,21 +17,20 @@ namespace aeyon
 	{
 	private:
 		Input* m_input;
+		Scene* m_scene;
 
 	public:
-		explicit FirstPersonSystem(Input* input)
-		: m_input(input)
+		explicit FirstPersonSystem(Scene* scene, Input* input)
+		: m_scene(scene), m_input(input)
 		{
-			requireComponent<Transform>();
-			requireComponent<FirstPersonController>();
 		}
 
 		void update() override
 		{
-			for (auto& entity : getEntities())
+			for (auto actor : m_scene->getActors())
 			{
-				auto transform = entity.getComponent<Transform>();
-				auto controller = entity.getComponent<FirstPersonController>();
+				auto transform = actor->getComponent<Transform>();
+				auto controller = actor->getComponent<FirstPersonController>();
 
 				glm::vec2 mouseMotion = m_input->getMouseMotion();
 

@@ -6,7 +6,7 @@
 #define AEYON3D_COLLISIONSYSTEM_HPP
 
 #include <iostream>
-#include "ECS/System.hpp"
+#include "System.hpp"
 #include "Transform.hpp"
 #include "BoxCollider.hpp"
 
@@ -21,11 +21,12 @@ namespace aeyon
 			BoxCollider* second;
 		};
 
+		Scene* m_scene;
+
 	public:
-		CollisionSystem()
+		CollisionSystem(Scene* scene)
+		: m_scene(scene)
 		{
-			requireComponent<Transform>();
-			requireComponent<BoxCollider>();
 		}
 
 		void update() override
@@ -33,10 +34,10 @@ namespace aeyon
 			std::vector<Transform*> transforms;
 			std::vector<BoxCollider*> colliders;
 
-			for (const auto& entity : getEntities())
+			for (auto actor : m_scene->getActors())
 			{
-				transforms.push_back(entity.getComponent<Transform>().get());
-				colliders.push_back(entity.getComponent<BoxCollider>().get());
+				transforms.push_back(actor->getComponent<Transform>());
+				colliders.push_back(actor->getComponent<BoxCollider>());
 			}
 		}
 	};

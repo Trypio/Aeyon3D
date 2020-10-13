@@ -9,25 +9,15 @@
 
 namespace aeyon
 {
-	class EventSystem;
-
 	class Window
 	{
 	public:
-		enum class SyncMode
-		{
-			None,
-			VSync,
-			GSync
-		};
-
 		enum class WindowMode
 		{
 			Windowed,
 			WindowedFullscreen,
 			Fullscreen
 		};
-
 
 		virtual ~Window() = default;
 
@@ -65,8 +55,8 @@ namespace aeyon
 		virtual int getViewportWidth() const = 0;
 		virtual int getViewportHeight() const = 0;
 
-		virtual void setVSyncMode(SyncMode mode) = 0;
-		virtual SyncMode getVSyncMode() const = 0;
+		virtual void setVSync(bool active) = 0;
+		virtual bool isVSyncEnabled() const = 0;
 
 		virtual void setWindowMode(WindowMode mode) = 0;
 		virtual WindowMode getWindowMode() const = 0;

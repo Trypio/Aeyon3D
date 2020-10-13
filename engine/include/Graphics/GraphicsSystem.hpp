@@ -7,11 +7,12 @@
 
 #include "glad/glad.h"
 #include "Graphics/Texture.hpp"
-#include "Actor.hpp"
 #include "Resource.hpp"
 #include "Graphics/Frustum.hpp"
 #include "Time.hpp"
 #include "System.hpp"
+
+#include <unordered_map>
 
 namespace aeyon
 {
@@ -21,6 +22,8 @@ namespace aeyon
 	class Material;
 	class Transform;
 	class SDLWindow;
+	class Scene;
+	class Actor;
 
 	class GraphicsSystem : public System
 	{
@@ -51,12 +54,12 @@ namespace aeyon
 		const int ShadowTexHeight = 2048;
 
 		SDLWindow* m_window;
-		Actor m_skyBox;
+		Actor* m_skyBox;
 
-		std::vector<Actor> m_lights;
+		std::vector<Actor*> m_lights;
 		std::vector<CameraInfo> m_cameras;
 		std::unordered_map<Material*, Batch> m_batches;
-		std::vector<Actor> m_scene;
+		Scene* m_scene;
 
 		Resource<Texture> m_shadowMap;
 		GLuint m_shadowFBO;
@@ -69,9 +72,10 @@ namespace aeyon
 
 
 	public:
-		explicit GraphicsSystem(SDLWindow* window);
+		explicit GraphicsSystem(Scene* scene, SDLWindow* window);
+		~GraphicsSystem() override;
 
-		void setSkybox(Actor skybox);
+		void setSkybox(Actor* skybox);
 
 		SDLWindow* getWindow();
 

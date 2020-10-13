@@ -11,8 +11,6 @@
 
 namespace aeyon
 {
-	class EventSystem;
-
 	class SDLWindow : public Window
 	{
 		using ProcAddress = void*(*)(const char*);
@@ -29,14 +27,12 @@ namespace aeyon
 		std::unique_ptr<SDL_Window, SDLWindowDestroyer> m_sdlWindow;
 		SDL_GLContext m_glContext;
 		bool m_shouldClose = false;
-		EventSystem* m_eventSystem = nullptr;
 
 	public:
 		SDLWindow(
 				const std::string& title,
 				int x, int y,
 				int width, int height,
-				EventSystem* eventSystem,
 				const Uint32& flags
 				);
 
@@ -85,8 +81,8 @@ namespace aeyon
 		int getViewportWidth() const override;
 		int getViewportHeight() const override;
 
-		void setVSyncMode(SyncMode mode) override;
-		SyncMode getVSyncMode() const override;
+		void setVSync(bool active) override;
+		bool isVSyncEnabled() const override;
 
 		void setWindowMode(WindowMode mode) override;
 		WindowMode getWindowMode() const override;

@@ -13,22 +13,22 @@ namespace aeyon
 	class Scene
 	{
 	private:
-		std::vector<Entity> m_entities;
+		std::vector<Actor*> m_actors;
 
 	public:
-		const std::vector<Entity>& getEntities() const
+		const std::vector<Actor*>& getActors() const
 		{
-			return m_entities;
+			return m_actors;
 		}
 
-		void addEntity(const Entity& entity)
+		void addActor(Actor* actor)
 		{
-			m_entities.push_back(entity);
+			m_actors.push_back(actor);
 		}
 
 		void clear()
 		{
-			m_entities.clear();
+			m_actors.clear();
 		}
 	};
 }

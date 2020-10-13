@@ -14,8 +14,7 @@ namespace aeyon
 
 	void SDLInput::update()
 	{
-		SDL_PumpEvents();
-
+		//SDL_PumpEvents();
 		m_mouseState.buttonState = SDL_GetMouseState(&m_mouseState.x, &m_mouseState.y);
 		m_mouseStateRelative.buttonState = SDL_GetRelativeMouseState(&m_mouseStateRelative.x, &m_mouseStateRelative.y);
 	}

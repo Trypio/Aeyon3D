@@ -1,5 +1,6 @@
 
 #include "Engine.hpp"
+#include "Graphics/GraphicsSystem.hpp"
 #include "Util.hpp"
 #include "Primitive.hpp"
 #include "Graphics/Light.hpp"
@@ -7,14 +8,16 @@
 #include "Time.hpp"
 #include "Graphics/Material.hpp"
 #include "Input/Input.hpp"
+#include "Window.hpp"
+#include "Transform.hpp"
 
 using namespace aeyon;
 
 class SimpleScene : public Engine
 {
 private:
-	Component<Transform> cubeTransform1;
-	Component<Transform> cubeTransform2;
+	Transform* cubeTransform1;
+	Transform* cubeTransform2;
 
 public:
 	void start() override
@@ -60,16 +63,16 @@ public:
 		Resource<Material> skyBoxMaterial(std::make_shared<ResourceData<Material>>("SkyboxMaterial", std::make_unique<Material>(skyboxShader)));
 		skyBoxMaterial->setParameter("skybox", skyboxCubemap);
 
-		auto skyboxEntity = Primitive::createCube(world.get(), false, false);
-		skyboxEntity.removeComponent<BoxCollider>();
-		auto skyBoxMesh = skyboxEntity.getComponent<MeshRenderer>();
+		auto skyboxActor = Primitive::createCube(false, false);
+		skyboxActor->removeComponent<BoxCollider>();
+		auto skyBoxMesh = skyboxActor->getComponent<MeshRenderer>();
 		auto positions = skyBoxMesh->getMesh()->getPositions();
 		std::for_each(positions.begin(), positions.end(), [](glm::vec3& v) { v *= 2.0f; });
 		skyBoxMesh->getMesh()->setPositions(std::move(positions));
     skyBoxMesh->setMaterial(skyBoxMaterial);
 		skyBoxMesh->getMesh()->apply();
 
-		graphics->setSkybox(skyboxEntity);
+		graphics->setSkybox(skyboxActor.get());
 
 //		auto cube1 = Primitive::createCube(m_world.get());
 //		cubeTransform1 = cube1.getComponent<Transform>();
@@ -83,26 +86,33 @@ public:
 //		auto cubeMesh2 = cube2.getComponent<MeshRenderer>();
 //    cubeMesh2->setMaterial(cubeMaterial);
 
+		Scene& scene = (scenes["Test"] = Scene());
 
-
-		auto ground = Primitive::createPlane(world.get());
-		auto groundTransform = ground.getComponent<Transform>();
+		auto ground = Primitive::createPlane();
+		auto groundTransform = ground->getComponent<Transform>();
 		groundTransform->setScale({50.0f, 0.1f, 50.0f});
-		auto groundMesh = ground.getComponent<MeshRenderer>();
+		auto groundMesh = ground->getComponent<MeshRenderer>();
 		groundMaterial->setTextureScale({50.0f, 50.0f});
     groundMesh->setMaterial(groundMaterial);
 
-		auto directionalLight = world->createEntity();
-		auto directionalLightTransform = directionalLight.addComponent<Transform>();
-		auto directionalLightLight = directionalLight.addComponent<Light>();
+    scene.addActor(ground.get());
+
+		auto directionalLight = std::make_unique<Actor>();
+		auto directionalLightTransform = directionalLight->getComponent<Transform>();
+		auto directionalLightLight = directionalLight->addComponent<Light>();
 		directionalLightLight->setColor(Color::fromRGBA32(255, 255, 225, 255));
 		directionalLightLight->setIntensity(1.2f);
 		directionalLightTransform->rotate({45.0f, 35.0f, 0.0f});
 
-		auto camera = world->createEntity();
-		auto cameraTransform = camera.addComponent<Transform>();
-		camera.addComponent<Camera>();
-		auto controller = camera.addComponent<FirstPersonController>();
+		scene.addActor(directionalLight.get());
+
+		// TODO: Des is bullshit weil die prefabs nach start() zerstört werden
+		// TODO: Lösung: Actor direkt in der Szene instanzieren (Kopie oder Move)
+
+		auto camera = std::make_unique<Actor>();
+		auto cameraTransform = camera->addComponent<Transform>();
+		camera->addComponent<Camera>();
+		auto controller = camera->addComponent<FirstPersonController>();
 		controller->m_moveSpeed = 3.0f;
 		controller->m_mouseSensitivity = 0.1f;
 
@@ -110,7 +120,7 @@ public:
 
 
 		auto model = loadModel("assets/models/nanosuit/nanosuit.obj", cubeMaterial);
-		model.getComponent<Transform>()->setScale(glm::vec3(0.1f));
+		model.front()->getComponent<Transform>()->setScale(glm::vec3(0.1f));
 	}
 
 	void update() override
@@ -121,55 +131,55 @@ public:
 		}
 
 
-		if (input->isKeyDown(KeyCode::Keypad4))
-		{
-			cubeTransform1->translate({-0.001f * Time::getDeltaTime(), 0.0f, 0.0f});
-		}
-
-		if (input->isKeyDown(KeyCode::Keypad6))
-		{
-			cubeTransform1->translate({0.001f * Time::getDeltaTime(), 0.0f, 0.0f});
-		}
-
-		if (input->isKeyDown(KeyCode::Keypad8))
-		{
-			cubeTransform1->translate({0.0f, 0.0f, 0.001f * Time::getDeltaTime()});
-		}
-
-		if (input->isKeyDown(KeyCode::Keypad2))
-		{
-			cubeTransform1->translate({0.0f, 0.0f, -0.001f * Time::getDeltaTime()});
-		}
-
-		if (input->isKeyDown(KeyCode::Keypad7))
-		{
-			cubeTransform1->rotate({0.0f, -0.1f * Time::getDeltaTime(), 0.0f});
-		}
-
-		if (input->isKeyDown(KeyCode::Keypad9))
-		{
-			cubeTransform1->rotate({0.0f, 0.1f * Time::getDeltaTime(), 0.0f});
-		}
-
-		if (input->isKeyDown(KeyCode::KeypadMinus))
-		{
-			cubeTransform1->rotate({0.1f * Time::getDeltaTime(), 0.0f, 0.0f});
-		}
-
-		if (input->isKeyDown(KeyCode::KeypadPlus))
-		{
-			cubeTransform1->rotate({-0.1f * Time::getDeltaTime(), 0.0f, 0.0f});
-		}
-
-		if (input->isKeyDown(KeyCode::Keypad1))
-		{
-			cubeTransform1->rotate({0.0f, 0.0f, 0.1f * Time::getDeltaTime()});
-		}
-
-		if (input->isKeyDown(KeyCode::Keypad3))
-		{
-			cubeTransform1->rotate({0.0f, 0.0f, -0.1f * Time::getDeltaTime()});
-		}
+//		if (input->isKeyDown(KeyCode::Keypad4))
+//		{
+//			cubeTransform1->translate({-0.001f * Time::getDeltaTime(), 0.0f, 0.0f});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::Keypad6))
+//		{
+//			cubeTransform1->translate({0.001f * Time::getDeltaTime(), 0.0f, 0.0f});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::Keypad8))
+//		{
+//			cubeTransform1->translate({0.0f, 0.0f, 0.001f * Time::getDeltaTime()});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::Keypad2))
+//		{
+//			cubeTransform1->translate({0.0f, 0.0f, -0.001f * Time::getDeltaTime()});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::Keypad7))
+//		{
+//			cubeTransform1->rotate({0.0f, -0.1f * Time::getDeltaTime(), 0.0f});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::Keypad9))
+//		{
+//			cubeTransform1->rotate({0.0f, 0.1f * Time::getDeltaTime(), 0.0f});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::KeypadMinus))
+//		{
+//			cubeTransform1->rotate({0.1f * Time::getDeltaTime(), 0.0f, 0.0f});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::KeypadPlus))
+//		{
+//			cubeTransform1->rotate({-0.1f * Time::getDeltaTime(), 0.0f, 0.0f});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::Keypad1))
+//		{
+//			cubeTransform1->rotate({0.0f, 0.0f, 0.1f * Time::getDeltaTime()});
+//		}
+//
+//		if (input->isKeyDown(KeyCode::Keypad3))
+//		{
+//			cubeTransform1->rotate({0.0f, 0.0f, -0.1f * Time::getDeltaTime()});
+//		}
 	}
 };
 

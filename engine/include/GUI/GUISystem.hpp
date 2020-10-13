@@ -5,7 +5,7 @@
 #ifndef AEYON3D_GUISYSTEM_HPP
 #define AEYON3D_GUISYSTEM_HPP
 
-#include "ECS/System.hpp"
+#include "System.hpp"
 #include "Graphics/GraphicsSystem.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"

@@ -23,7 +23,6 @@ set(SOURCE_FILES
         src/Graphics/Mesh.cpp
         src/Graphics/MeshRenderer.cpp
         src/Scene.cpp
-        src/SDLException.cpp
         src/SDLWindow.cpp
         src/Graphics/Shader.cpp
         src/Graphics/ShaderProgram.cpp

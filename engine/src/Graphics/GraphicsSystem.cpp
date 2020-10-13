@@ -33,14 +33,9 @@ namespace aeyon
 			throw std::runtime_error(message);
 	}
 
-	GraphicsSystem::GraphicsSystem(SDLWindow* window)
-	: m_window(window), m_shadowFBO(0)
+	GraphicsSystem::GraphicsSystem(Scene* scene, SDLWindow* window)
+	: m_scene(scene), m_window(window), m_shadowFBO(0)
 	{
-		requireComponent<Transform>();
-		acceptComponent<MeshRenderer>();
-		acceptComponent<Light>();
-		acceptComponent<Camera>();
-
 		m_window->makeContextCurrent();
 		gladLoadGLLoader(m_window->getProcAddress());
 
@@ -107,24 +102,17 @@ namespace aeyon
 
 	void GraphicsSystem::setup()
 	{
-		m_world->eventSystem->subscribe<QuitEvent>([&](const QuitEvent& event) {
-			m_window->close();
-		});
-
-		m_world->eventSystem->subscribe<WindowResizeEvent>([&](const WindowResizeEvent& event) {
-			glViewport(0, 0, event.viewportWidth, event.viewportHeight);
-		});
+//		m_world->eventSystem->subscribe<QuitEvent>([&](const QuitEvent& event) {
+//			m_window->close();
+//		});
+//
+//		m_world->eventSystem->subscribe<WindowResizeEvent>([&](const WindowResizeEvent& event) {
+//			glViewport(0, 0, event.viewportWidth, event.viewportHeight);
+//		});
 	}
 
 	void GraphicsSystem::update()
 	{
-		// TODO: Setup temporary scene till I have implemented the world's scene graph
-		m_scene.clear();
-		for (const auto& entity : getEntities())
-		{
-			m_scene.push_back(entity);
-		}
-
 		render();
 	}
 
@@ -185,14 +173,14 @@ namespace aeyon
 		{
 			m_batches.clear();
 
-			auto skyBoxMesh = m_skyBox.getComponent<MeshRenderer>();
+			auto skyBoxMesh = m_skyBox->getComponent<MeshRenderer>();
 
 			Batch& b = m_batches[skyBoxMesh->getMaterial().get()];
 
 			b.material = skyBoxMesh->getMaterial();
 			b.vaos.push_back(*static_cast<GLuint*>(skyBoxMesh->getMesh()->getVertexBuffer().getNativeHandle()));
 			b.ebos.push_back(*static_cast<GLuint*>(skyBoxMesh->getMesh()->getIndexBuffer().getNativeHandle()));
-			b.transforms.push_back(m_skyBox.getComponent<Transform>());
+			b.transforms.push_back(m_skyBox->getComponent<Transform>());
 			b.numTriangles.push_back(skyBoxMesh->getMesh()->getTriangles().size());
 			b.offsets.push_back(0);
 
@@ -212,13 +200,13 @@ namespace aeyon
 
 	void GraphicsSystem::generateRenderInfo(const std::string& shaderName)
 	{
-		for (auto& entity : m_scene)
+		for (auto actor : m_scene->getActors())
 		{
-			if (entity.hasComponent<Camera>())
+			if (actor->hasComponent<Camera>())
 			{
 				CameraInfo info;
-				info.transform = entity.getComponent<Transform>();
-				info.camera = entity.getComponent<Camera>();
+				info.transform = actor->getComponent<Transform>();
+				info.camera = actor->getComponent<Camera>();
 
 				info.frustum = Frustum(info.transform->getPosition(), info.transform->getForward(), info.transform->getUp(),
 															 info.camera->getNearClipPlane(), info.camera->getFarClipPlane(), info.camera->getFieldOfView(),
@@ -247,17 +235,17 @@ namespace aeyon
 			}
 		}
 
-		for (auto& entity : m_scene)
+		for (auto actor : m_scene->getActors())
 		{
-			if (entity.hasComponent<MeshRenderer>())
+			if (actor->hasComponent<MeshRenderer>())
 			{
-				auto mesh = entity.getComponent<MeshRenderer>();
+				auto mesh = actor->getComponent<MeshRenderer>();
 
 				//Frustum culling
 				//TODO: Adjust culling for shadow casters
 				Bounds bb = mesh->getMesh()->getBounds();
 
-				const auto& toWorld = entity.getComponent<Transform>()->getLocalToWorldMatrix();
+				const auto& toWorld = actor->getComponent<Transform>()->getLocalToWorldMatrix();
 
 				auto vs = bb.getVertices();
 
@@ -283,15 +271,15 @@ namespace aeyon
 
 					batch.vaos.push_back(*static_cast<GLuint*>(mesh->getMesh()->getVertexBuffer().getNativeHandle()));
 					batch.ebos.push_back(*static_cast<GLuint*>(mesh->getMesh()->getIndexBuffer().getNativeHandle()));
-					batch.transforms.push_back(entity.getComponent<Transform>());
+					batch.transforms.push_back(actor->getComponent<Transform>());
 					batch.numTriangles.push_back(mesh->getMesh()->getTriangles(i).size());
 					batch.offsets.push_back(mesh->getMesh()->getSubMeshOffset(i));
 				}
 			}
 
-			if (entity.hasComponent<Light>())
+			if (actor->hasComponent<Light>())
 			{
-				m_lights.push_back(entity);
+				m_lights.push_back(actor);
 			}
 		}
 	}
@@ -310,8 +298,8 @@ namespace aeyon
 
 		for (std::size_t i = 0; i < m_lights.size(); i++)
 		{
-			Light* l = m_lights[i].getComponent<Light>().get();
-			Transform* lightTransform = m_lights[i].getComponent<Transform>().get();
+			Light* l = m_lights[i]->getComponent<Light>();
+			Transform* lightTransform = m_lights[i]->getComponent<Transform>();
 			glm::vec4 pos;
 
 			// Transform either the light direction (for directional lights) or the light position (point lights) into view space
@@ -338,21 +326,21 @@ namespace aeyon
 		//       correct before creating a proper light matrix array.
 
 		Bounds sceneBounds;
-		for (auto& entity : m_scene)
+		for (auto actor : m_scene->getActors())
 		{
-			if (entity.hasComponent<MeshRenderer>())
+			if (actor->hasComponent<MeshRenderer>())
 			{
-				Bounds objBounds = entity.getComponent<MeshRenderer>()->getMesh()->getBounds();
+				Bounds objBounds = actor->getComponent<MeshRenderer>()->getMesh()->getBounds();
 
 				// Omit plane
-				if (entity.getComponent<Transform>()->getScale().x > 5.0f)
+				if (actor->getComponent<Transform>()->getScale().x > 5.0f)
 					continue;
 
 				auto vs = objBounds.getVertices();
 
 				for (auto& v : vs)
 				{
-					v = entity.getComponent<Transform>()->getLocalToWorldMatrix() * glm::vec4(v, 1.0f);
+					v = actor->getComponent<Transform>()->getLocalToWorldMatrix() * glm::vec4(v, 1.0f);
 					sceneBounds.encompass(v);
 				}
 			}
@@ -360,7 +348,7 @@ namespace aeyon
 
 		glm::mat4 lightView = glm::lookAtLH(
 				sceneBounds.getCenter(),
-				sceneBounds.getCenter() + m_lights[0].getComponent<Transform>()->getForward(),
+				sceneBounds.getCenter() + m_lights[0]->getComponent<Transform>()->getForward(),
 				glm::vec3(0.0f, 1.0f, 0.0f)
 		);
 
@@ -473,9 +461,9 @@ namespace aeyon
 		}
 	}
 
-	void GraphicsSystem::setSkybox(Entity skybox)
+	void GraphicsSystem::setSkybox(Actor* skybox)
 	{
-		m_skyBox = std::move(skybox);
+		m_skyBox = skybox;
 	}
 
 	SDLWindow* GraphicsSystem::getWindow()

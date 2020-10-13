@@ -8,31 +8,40 @@
 #include <memory>
 #include "TextureCache.hpp"
 #include "ShaderCache.hpp"
-#include "ECS/Entity.hpp"
 #include "Graphics/Material.hpp"
-#include "Graphics/GraphicsSystem.hpp"
-#include "Input/Input.hpp"
-#include "Window.hpp"
-#include "ECS/World.hpp"
 #include "Event/EventSystem.hpp"
+#include "Scene.hpp"
 
 class aiNode;
 class aiScene;
 
 namespace aeyon
 {
+	class Window;
+	class Input;
+	class GraphicsSystem;
+	class GUISystem;
+	class CollisionSystem;
+	class System;
+
 	class Engine
 	{
 	protected:
-		EventSystem eventSystem;
+		EventSystem m_eventSystem;
 
-		std::unique_ptr<World> world;
 		std::unique_ptr<Window> window;
 		std::unique_ptr<Input> input;
-		GraphicsSystem* graphics = nullptr;
+		std::unique_ptr<GraphicsSystem> graphics;
+		std::unique_ptr<GUISystem> gui;
+		std::unique_ptr<CollisionSystem> collisions;
+
+		std::vector<std::unique_ptr<System>> userSystems;
 
 		TextureCache textureCache;
 		ShaderCache shaderCache;
+
+		std::unordered_map<std::string, Scene> scenes;
+		Scene* currentScene = nullptr;
 
 		virtual void setup();
 		virtual void start();
@@ -40,8 +49,8 @@ namespace aeyon
 		virtual void fixedUpdate();
 		virtual void lateUpdate();
 
-		Entity loadModel(const std::string& path, Resource<Material> material);
-		void processNode(const aiScene* scene, const aiNode* node, Entity entity, Resource<Material> material);
+		std::vector<std::unique_ptr<Actor>> loadModel(const std::string& path, Resource<Material> material);
+		void processNode(const aiScene* scene, const aiNode* node, Actor& root, std::vector<std::unique_ptr<Actor>>& children,  Resource<Material> material);
 
 	public:
 		Engine() = default;

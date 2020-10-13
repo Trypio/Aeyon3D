@@ -5,8 +5,6 @@
 #ifndef AEYON3D_PRIMITIVE_HPP
 #define AEYON3D_PRIMITIVE_HPP
 
-
-#include "ECS/Entity.hpp"
 #include "Transform.hpp"
 #include "Graphics/Material.hpp"
 #include "Camera.hpp"
@@ -16,19 +14,15 @@
 #include "Resource.hpp"
 #include <memory>
 
-namespace aeyon
-{
-	namespace Primitive
+namespace aeyon::Primitive
 	{
 		// TODO: Supply a white default material for all primitves (or every mesh renderer at creation)
 
-		static Entity createPlane(World* world, bool withNormals = true, bool withUVs = true)
+		static std::unique_ptr<Actor> createPlane(bool withNormals = true, bool withUVs = true)
 		{
 			// TODO: Pre-generate meshes as shared resources
 
-			Entity plane = world->createEntity();
-			plane.addComponent<Transform>();
-
+			auto plane = std::make_unique<Actor>();
 
 			VertexFormat format;
 
@@ -84,17 +78,16 @@ namespace aeyon
 			mesh->apply();
 
 
-			plane.addComponent<MeshRenderer>(mesh);
+			plane->addComponent<MeshRenderer>(mesh);
 
 			return plane;
 		}
 
-		static Entity createCube(World* world, bool withNormals = true, bool withUVs = true)
+		static std::unique_ptr<Actor> createCube(bool withNormals = true, bool withUVs = true)
 		{
 			// TODO: Pre-generate meshes as shared resources
 
-			Entity cube = world->createEntity();
-			cube.addComponent<Transform>();
+			auto cube = std::make_unique<Actor>();
 
 			VertexFormat format;
 
@@ -276,12 +269,11 @@ namespace aeyon
 
 			mesh->apply();
 
-			cube.addComponent<MeshRenderer>(mesh);
-			cube.addComponent<BoxCollider>();
+			cube->addComponent<MeshRenderer>(mesh);
+			cube->addComponent<BoxCollider>();
 
 			return cube;
 		}
 	}
-}
 
 #endif //AEYON3D_PRIMITIVE_HPP

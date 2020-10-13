@@ -5,7 +5,7 @@
 #ifndef AEYON3D_AUDIOSYSTEM_HPP
 #define AEYON3D_AUDIOSYSTEM_HPP
 
-#include "ECS/System.hpp"
+#include "System.hpp"
 #include <AL/al.h>
 #include "Audio/AudioSource.hpp"
 #include "Transform.hpp"
@@ -58,9 +58,6 @@ namespace aeyon
 		AudioSystem()
 		: m_buffer(0), m_device(nullptr), m_context(nullptr)
 		{
-			requireComponent<Transform>();
-			requireComponent<AudioSource>();
-
 			alGenBuffers(1, &m_buffer);
 			checkError();
 		}
