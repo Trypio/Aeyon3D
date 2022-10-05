@@ -7,15 +7,14 @@
 
 #include "Component.hpp"
 
-namespace aeyon
+
+class FirstPersonController : public aeyon::Component
 {
-	class FirstPersonController : public Component
-	{
-	public:
-		float m_moveSpeed;
-		float m_mouseSensitivity;
-	};
-}
+public:
+    float m_moveSpeed;
+    float m_mouseSensitivity;
+};
+
 
 
 #endif //AEYON3D_CHARACTERCONTROLLER_HPP

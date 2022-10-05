@@ -7,8 +7,7 @@
 
 #include "Transform.hpp"
 #include "Graphics/Material.hpp"
-#include "Camera.hpp"
-#include "BoxCollider.hpp"
+#include "Graphics/Camera.hpp"
 #include "Graphics/MeshRenderer.hpp"
 #include "Graphics/Mesh.hpp"
 #include "Resource.hpp"
@@ -18,11 +17,11 @@ namespace aeyon::Primitive
 	{
 		// TODO: Supply a white default material for all primitves (or every mesh renderer at creation)
 
-		static std::unique_ptr<Actor> createPlane(bool withNormals = true, bool withUVs = true)
+		static Actor createPlane(bool withNormals = true, bool withUVs = true)
 		{
 			// TODO: Pre-generate meshes as shared resources
 
-			auto plane = std::make_unique<Actor>();
+			Actor plane;
 
 			VertexFormat format;
 
@@ -78,16 +77,16 @@ namespace aeyon::Primitive
 			mesh->apply();
 
 
-			plane->addComponent<MeshRenderer>(mesh);
+			plane.addComponent<MeshRenderer>(mesh);
 
 			return plane;
 		}
 
-		static std::unique_ptr<Actor> createCube(bool withNormals = true, bool withUVs = true)
+		static Actor createCube(bool withNormals = true, bool withUVs = true)
 		{
 			// TODO: Pre-generate meshes as shared resources
 
-			auto cube = std::make_unique<Actor>();
+			Actor cube;
 
 			VertexFormat format;
 
@@ -269,8 +268,7 @@ namespace aeyon::Primitive
 
 			mesh->apply();
 
-			cube->addComponent<MeshRenderer>(mesh);
-			cube->addComponent<BoxCollider>();
+			cube.addComponent<MeshRenderer>(mesh);
 
 			return cube;
 		}

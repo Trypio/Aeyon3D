@@ -10,7 +10,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
-#include "SDLWindow.hpp"
+#include "Graphics/SDLWindow.hpp"
 #include <iostream>
 #include "Time.hpp"
 

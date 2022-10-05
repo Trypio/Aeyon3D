@@ -9,6 +9,7 @@
 #include <typeindex>
 #include <memory>
 #include <string>
+#include <utility>
 #include "Transform.hpp"
 
 namespace aeyon
@@ -31,11 +32,38 @@ namespace aeyon
 			addComponent<Transform>();
 		}
 
-		Actor(const Actor& src) = delete;
-		Actor(Actor&& src) = delete;
+        explicit Actor(const Actor& other) :
+        m_name(other.m_name)
+        {
+            for (const auto& c : other.m_components)
+            {
+                m_components.insert(std::make_pair(c.first, std::make_unique<Component>(*c.second)));
+            }
+        }
 
-		Actor& operator=(const Actor& other) = delete;
-		Actor& operator=(Actor&& other) = delete;
+        Actor(Actor&& other) noexcept : Actor()
+        {
+            swap(*this, other);
+        }
+
+        Actor& operator=(Actor other)
+        {
+            swap(*this, other);
+            return *this;
+        }
+
+        friend void swap(Actor& first, Actor& second) noexcept
+        {
+            using std::swap;
+
+            swap(first.m_name, second.m_name);
+            swap(first.m_components, second.m_components);
+        }
+
+        void setName(std::string name)
+        {
+            m_name = std::move(name);
+        }
 
 		template <typename T, typename... Args>
 		T* addComponent(Args ...args)

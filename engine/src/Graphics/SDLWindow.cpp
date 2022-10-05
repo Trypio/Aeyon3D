@@ -2,7 +2,7 @@
 //
 //
 
-#include "SDLWindow.hpp"
+#include "Graphics/SDLWindow.hpp"
 #include <iostream>
 
 namespace aeyon
@@ -30,7 +30,7 @@ namespace aeyon
 		m_glContext = SDL_GL_CreateContext(window);
 
 		setVSync(true);
-		//SDL_SetRelativeMouseMode(SDL_TRUE);
+		SDL_SetRelativeMouseMode(SDL_TRUE);
 	}
 
 	SDLWindow::~SDLWindow()
@@ -183,16 +183,16 @@ namespace aeyon
 
 	int SDLWindow::getViewportWidth() const 
 	{
-		int width;
-		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &width, nullptr);
+		int width, height;
+		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &width, &height);
 
 		return width;
 	}
 
 	int SDLWindow::getViewportHeight() const 
 	{
-		int height;
-		SDL_GL_GetDrawableSize(m_sdlWindow.get(), nullptr, &height);
+		int width, height;
+		SDL_GL_GetDrawableSize(m_sdlWindow.get(), &width, &height);
 
 		return height;
 	}

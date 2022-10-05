@@ -14,8 +14,6 @@
 #include <cstring>
 #include <stdexcept>
 #include "Graphics/Mesh.hpp"
-#include "stb_vorbis.h"
-#include "Audio/AudioClip.hpp"
 #include <iostream>
 #include "Graphics/Shader.hpp"
 
@@ -93,34 +91,6 @@ namespace aeyon
 			file.close();
 
 			return std::make_unique<Shader>(code);
-		}
-
-		static std::unique_ptr<AudioClip> loadAudioClipFromFile(const std::string& path)
-		{
-			std::ifstream file(path, std::ios::binary);
-
-			if (!file)
-			{
-				throw std::runtime_error(std::string("Audio file ") + path + " could not be opened");
-			}
-
-			std::vector<unsigned char> encoded(std::istreambuf_iterator<char>(file), {});
-
-			short* wav;
-			int channels, sampleRate;
-
-			int numSamples = stb_vorbis_decode_memory(encoded.data(), encoded.size(), &channels, &sampleRate, &wav);
-			if(numSamples == -1)
-			{
-				throw std::runtime_error(std::string("File ") + path + " is not a valid Vorbis file");
-			}
-
-			std::vector<unsigned char> decoded(reinterpret_cast<unsigned char*>(wav),
-					                           reinterpret_cast<unsigned char*>(wav + numSamples * channels));
-
-			free(wav);
-
-			return std::make_unique<AudioClip>(std::move(decoded), channels, sampleRate, 16);
 		}
 
 		template <typename T>

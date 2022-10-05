@@ -6,12 +6,10 @@
 
 #include "Engine.hpp"
 #include "Time.hpp"
-#include "FirstPersonSystem.hpp"
-#include "CollisionSystem.hpp"
 #include "Graphics/MeshRenderer.hpp"
 #include "Graphics/GraphicsSystem.hpp"
 #include "Input/SDLInput.hpp"
-#include "SDLWindow.hpp"
+#include "Graphics/SDLWindow.hpp"
 #include "GUI/GUISystem.hpp"
 
 #include <iostream>
@@ -20,6 +18,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <spdlog/spdlog.h>
+#include <algorithm>
 
 namespace aeyon
 {
@@ -70,42 +69,40 @@ namespace aeyon
 
 		//sdlWindow->setWindowMode(Window::WindowMode::Fullscreen);
 
-		graphics = std::make_unique<GraphicsSystem>(currentScene, window.get());
+		graphics = std::make_unique<GraphicsSystem>(&sceneLoader, dynamic_cast<SDLWindow*>(window.get()));
 		gui = std::make_unique<GUISystem>(graphics.get());
-		collisions = std::make_unique<CollisionSystem>(currentScene);
 
-		userSystems.push_back(std::make_unique<FirstPersonSystem>(currentScene, input.get()));
 
 		graphics->setup();
 		gui->setup();
-		collisions->setup();
+        setup();
 		for (auto& system : userSystems)
 		{
 			system->setup();
 		}
-		setup();
+
 
 		graphics->start();
 		gui->start();
-		collisions->start();
+        start();
 		for (auto& system : userSystems)
 		{
 			system->start();
 		}
-		start();
+
 
 		while (!window->shouldClose())
 		{
-			Time::update();
+            Time::update();
+            m_eventSystem.update();
 			input->update();
 			update();
 			for (auto& system : userSystems)
 			{
 				system->update();
 			}
-			collisions->update();
-			gui->update();
 			graphics->update();
+            gui->update();
 
 			lateUpdate();
 
@@ -118,7 +115,7 @@ namespace aeyon
 
 
 
-	std::vector<std::unique_ptr<Actor>> Engine::loadModel(const std::string& path, Resource<Material> material)
+	std::vector<Actor> Engine::loadModel(const std::string& path, Resource<Material> material)
 	{
 		Assimp::Importer importer;
 
@@ -130,17 +127,15 @@ namespace aeyon
 			throw std::runtime_error(std::string("ERROR::ASSIMP::") + importer.GetErrorString());
 		}
 
-		std::unique_ptr<Actor> root = std::make_unique<Actor>();
-		std::vector<std::unique_ptr<Actor>> list;
+		Actor root;
+		std::vector<Actor> list;
 
-		processNode(scene, scene->mRootNode, *root), list, material);
-
-		list.insert(list.begin(), std::move(root));
+		processNode(scene, scene->mRootNode, std::move(root), list, material);
 
 		return list;
 	}
 
-	void Engine::processNode(const aiScene* scene, const aiNode* node, Actor& root, std::vector<std::unique_ptr<Actor>>& actors, Resource<Material> material)
+	void Engine::processNode(const aiScene* scene, const aiNode* node, Actor root, std::vector<Actor>& actors, Resource<Material> material)
 	{
 		auto transform = root.getComponent<Transform>();
 
@@ -258,11 +253,13 @@ namespace aeyon
 			meshRenderer->setMaterial(material);
 		}
 
+        actors.push_back(std::move(root));
+
 		for (unsigned int iChild = 0; iChild < node->mNumChildren; iChild++)
 		{
-			auto child = std::make_unique<Actor>();
-			child->addComponent<Transform>()->setParent(transform);
-			processNode(scene, node->mChildren[iChild], *child, actors, material);
+			Actor child;
+			child.addComponent<Transform>()->setParent(transform);
+			processNode(scene, node->mChildren[iChild], std::move(child), actors, material);
 		}
 	}
 }

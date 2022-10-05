@@ -22,7 +22,7 @@ namespace aeyon
 	class Material;
 	class Transform;
 	class SDLWindow;
-	class Scene;
+	class SceneLoader;
 	class Actor;
 
 	class GraphicsSystem : public System
@@ -54,12 +54,12 @@ namespace aeyon
 		const int ShadowTexHeight = 2048;
 
 		SDLWindow* m_window;
-		Actor* m_skyBox;
+		Actor* m_skyBox = nullptr;
 
 		std::vector<Actor*> m_lights;
 		std::vector<CameraInfo> m_cameras;
 		std::unordered_map<Material*, Batch> m_batches;
-		Scene* m_scene;
+		SceneLoader* m_sceneLoader;
 
 		Resource<Texture> m_shadowMap;
 		GLuint m_shadowFBO;
@@ -72,7 +72,7 @@ namespace aeyon
 
 
 	public:
-		explicit GraphicsSystem(Scene* scene, SDLWindow* window);
+		explicit GraphicsSystem(SceneLoader* sceneLoader, SDLWindow* window);
 		~GraphicsSystem() override;
 
 		void setSkybox(Actor* skybox);

@@ -11,19 +11,18 @@
 #include "Graphics/Material.hpp"
 #include "Event/EventSystem.hpp"
 #include "Scene.hpp"
+#include "Graphics/SDLWindow.hpp"
+#include "GUI/GUISystem.hpp"
+#include "Graphics/GraphicsSystem.hpp"
+#include "Input/SDLInput.hpp"
+#include "System.hpp"
+#include "SceneLoader.hpp"
 
 class aiNode;
 class aiScene;
 
 namespace aeyon
 {
-	class Window;
-	class Input;
-	class GraphicsSystem;
-	class GUISystem;
-	class CollisionSystem;
-	class System;
-
 	class Engine
 	{
 	protected:
@@ -33,15 +32,12 @@ namespace aeyon
 		std::unique_ptr<Input> input;
 		std::unique_ptr<GraphicsSystem> graphics;
 		std::unique_ptr<GUISystem> gui;
-		std::unique_ptr<CollisionSystem> collisions;
 
 		std::vector<std::unique_ptr<System>> userSystems;
 
 		TextureCache textureCache;
 		ShaderCache shaderCache;
-
-		std::unordered_map<std::string, Scene> scenes;
-		Scene* currentScene = nullptr;
+        SceneLoader sceneLoader;
 
 		virtual void setup();
 		virtual void start();
@@ -49,8 +45,8 @@ namespace aeyon
 		virtual void fixedUpdate();
 		virtual void lateUpdate();
 
-		std::vector<std::unique_ptr<Actor>> loadModel(const std::string& path, Resource<Material> material);
-		void processNode(const aiScene* scene, const aiNode* node, Actor& root, std::vector<std::unique_ptr<Actor>>& children,  Resource<Material> material);
+		std::vector<Actor> loadModel(const std::string& path, Resource<Material> material);
+		void processNode(const aiScene* scene, const aiNode* node, Actor root, std::vector<Actor>& children,  Resource<Material> material);
 
 	public:
 		Engine() = default;

@@ -2,7 +2,7 @@
 //
 //
 
-#include "Camera.hpp"
+#include "Graphics/Camera.hpp"
 
 namespace aeyon
 {
