@@ -28,6 +28,19 @@ namespace aeyon
 		}
 	};
 
+    // TODO:
+    /*
+     * ResourceMetadata
+     *
+     * Resource<Texture> tex = new Resource<Texture>(path, new TextureMetadata(...));
+     *
+     * ... oder später TextureMetadata von AssetManager laden lassen
+     * Resource<Texture> tex = new Resource<Texture>(path);
+     *
+     * Resource<T> um async flag erweitern
+     *
+     */
+
 	template<typename T>
 	class Resource
 	{

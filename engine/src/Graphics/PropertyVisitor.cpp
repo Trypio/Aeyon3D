@@ -6,7 +6,6 @@
 #include "Color.hpp"
 #include "Graphics/Texture.hpp"
 #include <glm/gtc/type_ptr.hpp>
-#include <Graphics/PropertyVisitor.hpp>
 
 
 namespace aeyon
