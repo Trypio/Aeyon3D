@@ -11,7 +11,6 @@ set(SOURCE_FILES
         src/Plane.cpp
         src/Graphics/Frustum.cpp
         src/Graphics/IndexBuffer.cpp
-        src/Graphics/FrameBuffer.cpp
         src/Graphics/VertexBuffer.cpp
         src/Graphics/Camera.cpp
         src/Color.cpp

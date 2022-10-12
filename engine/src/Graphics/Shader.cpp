@@ -16,6 +16,19 @@ namespace aeyon
 		createPrograms(sourceCode);
 	}
 
+    Shader::Shader(Shader&& other) noexcept
+    : m_name(std::move(other.m_name)), m_programs(std::move(other.m_programs)),
+    m_properties(std::move(other.m_properties))
+    {
+    }
+
+    Shader& Shader::operator=(Shader&& other) noexcept
+    {
+        m_name = std::move(other.m_name);
+        m_programs = std::move(other.m_programs);
+        m_properties = std::move(other.m_properties);
+    }
+
 	void Shader::createPrograms(const std::string& sourceCode)
 	{
 		ShaderParser parser(sourceCode);
@@ -83,8 +96,12 @@ namespace aeyon
 
 			ShaderProgram prog;
 
+            // TODO: Check compile status
+
 			prog.compile(ShaderProgram::Type::Vertex, vertexCode);
 			prog.compile(ShaderProgram::Type::Fragment, fragmentCode);
+
+            // TODO: Check link status
 
 			prog.link();
 

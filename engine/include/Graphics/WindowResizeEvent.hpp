@@ -1,14 +1,13 @@
-//
-// Created by thors on 21.11.2019.
-//
-
 #ifndef AEYON3D_WINDOWRESIZEEVENT_HPP
 #define AEYON3D_WINDOWRESIZEEVENT_HPP
 
-#include "Event.hpp"
+#include "Event/Event.hpp"
 
 namespace aeyon
 {
+    /**
+     * Indicates that the main window has been resized
+     */
 	struct WindowResizeEvent : Event
 	{
 		int height, width;

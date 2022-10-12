@@ -1,46 +1,62 @@
-//
-//
-//
-
 #ifndef AEYON3D_VERTEXBUFFER_HPP
 #define AEYON3D_VERTEXBUFFER_HPP
 
-#include "glad/glad.h"
+#include <glad/glad.h>
 #include <vector>
-#include "Types.hpp"
+#include <any>
 
 namespace aeyon
 {
-	class VertexBuffer
-	{
-	private:
-		BufferUsage m_bufferUsageType;
-		std::size_t m_size;
+    class VertexBuffer
+    {
+        enum class BufferUsage : GLenum
+        {
+            Static = GL_STATIC_DRAW,
+            Dynamic = GL_DYNAMIC_DRAW
+        };
 
-		GLuint m_vao;
-		GLuint m_vbo;
+        enum class VertexType : GLenum
+        {
+            Float = GL_FLOAT,
+            Int = GL_INT
+        };
 
-		std::size_t sizeOfVertexType(VertexType type) const;
+        struct VertexAttribute
+        {
+            VertexType type;
+            std::size_t count;
+            bool normalized;
+        };
 
-	public:
-		explicit VertexBuffer(const std::vector<VertexAttribute>& attributes);
-		VertexBuffer(const VertexBuffer& other);
-		VertexBuffer& operator=(VertexBuffer other);
-		VertexBuffer(VertexBuffer&& other) noexcept;
-    ~VertexBuffer();
+    private:
+        BufferUsage m_bufferUsageType;
+        std::size_t m_size;
+        std::vector<VertexAttribute> m_attributes;
 
-		friend void swap(VertexBuffer& first, VertexBuffer& second) noexcept;
+        GLuint m_vao;
+        GLuint m_vbo;
 
-		void reset(std::size_t size, BufferUsage usage = BufferUsage::Static);
-    void write(void* data, std::size_t size, std::size_t offset);
+        std::size_t sizeOfVertexType(VertexType type) const;
 
-    void setVertexAttributes(const std::vector<VertexAttribute>& attributes);
+    public:
+        explicit VertexBuffer(std::vector<VertexAttribute> attributes);
+        VertexBuffer(const VertexBuffer& other);
+        VertexBuffer& operator=(VertexBuffer other);
+        VertexBuffer(VertexBuffer&& other) noexcept;
+        ~VertexBuffer();
 
-    std::size_t getSize() const;
-		BufferUsage getBufferUsageType() const;
+        friend void swap(VertexBuffer& first, VertexBuffer& second) noexcept;
 
-		void* getNativeHandle();
-	};
+        void reset(std::size_t size, BufferUsage usage = BufferUsage::Static);
+        void write(void* data, std::size_t size, std::size_t offset);
+
+        void setVertexAttributes(std::vector<VertexAttribute> attributes);
+
+        std::size_t getSize() const;
+        BufferUsage getBufferUsageType() const;
+
+        std::any getNativeHandle();
+    };
 }
 
 #endif //AEYON3D_VERTEXBUFFER_HPP

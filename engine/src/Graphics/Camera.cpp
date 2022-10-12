@@ -1,11 +1,12 @@
-//
-//
-//
-
 #include "Graphics/Camera.hpp"
 
 namespace aeyon
 {
+    Camera::Camera()
+    : m_nearClipPlane(0.1f), m_farClipPlane(100.0f), m_fieldOfView(45.0f)
+    {
+    }
+
 	void Camera::setNearClipPlane(float distance)
 	{
 		m_nearClipPlane = distance;

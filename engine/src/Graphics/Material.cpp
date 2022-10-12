@@ -1,18 +1,14 @@
-//
-//
-//
-
 #include "Graphics/Material.hpp"
 
 namespace aeyon
 {
 	Material::Material(Resource<Shader> shader)
-	: m_shader(std::move(shader))
+	: m_textureScale(glm::vec2(1.0f)), m_textureOffset(glm::vec2(0.0f)), m_shader(std::move(shader))
 	{
 		GLuint currentTexIndex = 0;
 		for (const auto& p : m_shader->getPropertyMap())
 		{
-			Parameter entry(p.second, 0.0f);
+			Parameter entry{p.second, 0.0f};
 
 			if (entry.shaderProperty.type.find("sampler") == 0)
 			{
@@ -23,7 +19,7 @@ namespace aeyon
 		}
 	}
 
-	Resource<Shader> Material::getShader() const
+	Resource<Shader>& Material::getShader()
 	{
 		return m_shader;
 	}

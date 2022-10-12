@@ -12,8 +12,16 @@ namespace aeyon
 	class Color
 	{
 	public:
-		float r, g, b, a;
+//        union
+//        {
+//            struct
+//            {
+//                float r, g, b, a;
+//            };
+//            glm::vec4 vec;
+//        };
 
+		float r, g, b, a;
 		Color();
 		explicit Color(float value);
 		Color(float red, float green, float blue, float alpha = 1.0f);

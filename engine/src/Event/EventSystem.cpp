@@ -3,7 +3,7 @@
 //
 
 #include "Event/EventSystem.hpp"
-#include "Event/QuitEvent.hpp"
+#include "QuitEvent.hpp"
 #include "Input/KeyboardEvent.hpp"
 #include <SDL2/SDL.h>
 #include "imgui.h"

@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_CAMERA_HPP
 #define AEYON3D_CAMERA_HPP
 
@@ -9,14 +5,19 @@
 
 namespace aeyon
 {
+    /**
+     * A component that represents 3D camera properties.
+     */
 	class Camera : public Component
 	{
 	private:
-		float m_nearClipPlane = 0.1f;
-		float m_farClipPlane = 100.0f;
-		float m_fieldOfView = 45.0f;
+		float m_nearClipPlane;
+		float m_farClipPlane;
+		float m_fieldOfView;
 
 	public:
+        Camera();
+
 		void setNearClipPlane(float distance);
 		void setFarClipPlane(float distance);
 		void setFieldOfView(float degrees);

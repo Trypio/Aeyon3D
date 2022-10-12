@@ -15,6 +15,8 @@ using namespace aeyon;
 
 class SimpleScene : public Engine
 {
+private:
+    Actor m_skybox;
 
 public:
     void setup() override
@@ -56,8 +58,7 @@ public:
         Resource<Shader> standardShader = shaderCache.load("Standard", {"assets/shaders/Standard.shader"});
         Resource<Shader> skyboxShader = shaderCache.load("Skybox", {"assets/shaders/Skybox.shader"});
 
-        Resource<Material> cubeMaterial(
-                std::make_shared<ResourceData<Material>>("CubeMaterial", std::make_unique<Material>(standardShader)));
+        Resource<Material> cubeMaterial(std::make_unique<Material>(standardShader));
         cubeMaterial->setParameter("diffuse_texture", stoneDiffuse);
         cubeMaterial->setParameter("specular_texture", stoneGloss);
         cubeMaterial->setParameter("normal_texture", stoneNormals);
@@ -67,8 +68,7 @@ public:
         cubeMaterial->setParameter("shininess", 8.0f);
         cubeMaterial->setTextureScale(glm::vec2(1.0f));
 
-        Resource<Material> groundMaterial(
-                std::make_shared<ResourceData<Material>>("GroundMaterial", std::make_unique<Material>(standardShader)));
+        Resource<Material> groundMaterial(std::make_unique<Material>(standardShader));
         groundMaterial->setParameter("diffuse_texture", groundDiffuse);
         groundMaterial->setParameter("specular_texture", groundGloss);
         groundMaterial->setParameter("normal_texture", groundNormals);
@@ -76,12 +76,20 @@ public:
         groundMaterial->setParameter("specular_color", glm::vec4(0.2f));
         groundMaterial->setParameter("shininess", 64.0f);
 
-        Resource<Material> skyBoxMaterial(
-                std::make_shared<ResourceData<Material>>("SkyboxMaterial", std::make_unique<Material>(skyboxShader)));
+        Resource<Material> skyBoxMaterial(std::make_unique<Material>(skyboxShader));
         skyBoxMaterial->setParameter("skybox", skyboxCubemap);
 
 
         // TODO: Skybox Komponente erstellen
+        m_skybox = Primitive::createCube(false, false);
+        auto skyBoxMesh = m_skybox.getComponent<MeshRenderer>();
+        auto skyBoxMeshPositions = skyBoxMesh->getMesh()->getPositions();
+        std::for_each(skyBoxMeshPositions.begin(), skyBoxMeshPositions.end(), [](glm::vec3& v) { v *= 2.0f; });
+        skyBoxMesh->getMesh()->setPositions(skyBoxMeshPositions);
+        skyBoxMesh->setMaterial(skyBoxMaterial);
+        skyBoxMesh->getMesh()->apply();
+
+        graphics->setSkybox(&m_skybox);
 
         Scene &scene = sceneLoader.createScene("Test");
         sceneLoader.setActiveScene("Test");
@@ -95,6 +103,10 @@ public:
         groundMesh->setMaterial(groundMaterial);
 
         scene.addActor(std::move(ground));
+
+        // TODO: Local material copy on demand (Unity)
+        //box.getComponent<MeshRenderer>()->getMaterial()->setTextureScale({1.0f, 10.0f});
+
 
         Actor directionalLight("Directional Light");
         auto directionalLightTransform = directionalLight.getComponent<Transform>();
@@ -120,16 +132,19 @@ public:
         model.front().getComponent<Transform>()->setScale(glm::vec3(0.1f));
 
         scene.addActors(std::move(model));
+
+
+
     }
 
     void update() override
     {
-        if (input->isKeyDown(KeyCode::Escape))
+        if (input->getKeyDown(KeyCode::Escape))
         {
             window->close();
         }
 
-        if (input->isKeyDown(KeyCode::LeftAlt))
+        if (input->getKeyDown(KeyCode::LeftAlt))
         {
             SDL_SetRelativeMouseMode(SDL_GetRelativeMouseMode() == SDL_TRUE ? SDL_FALSE : SDL_TRUE);
         }

@@ -32,7 +32,7 @@ namespace aeyon::Primitive
         else
             format = VertexFormat::P1;
 
-        Resource<Mesh> mesh(std::make_shared<ResourceData<Mesh>>("Plane", std::make_unique<Mesh>(format)));
+        Resource<Mesh> mesh(std::make_unique<Mesh>(format));
 
         mesh->setPositions(std::vector<glm::vec3>{
                 glm::vec3(-0.5f, 0.5f, -0.5f),
@@ -97,7 +97,7 @@ namespace aeyon::Primitive
         else
             format = VertexFormat::P1;
 
-        Resource<Mesh> mesh(std::make_shared<ResourceData<Mesh>>("Cube", std::make_unique<Mesh>(format)));
+        Resource<Mesh> mesh(std::make_unique<Mesh>(format));
 
         mesh->setPositions(std::vector<glm::vec3>{
                 // Front Face

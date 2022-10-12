@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_EVENTSYSTEM_HPP
 #define AEYON3D_EVENTSYSTEM_HPP
 
@@ -26,6 +22,7 @@ namespace aeyon
 	private:
 		class ICallbackWrapper
 		{
+            virtual ~ICallbackWrapper() = default;
 		};
 
 		template <typename EventType>
@@ -78,6 +75,5 @@ namespace aeyon
 		}
 	};
 }
-
 
 #endif //AEYON3D_EVENTSYSTEM_HPP

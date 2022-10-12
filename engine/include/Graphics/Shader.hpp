@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_SHADER_HPP
 #define AEYON3D_SHADER_HPP
 
@@ -11,6 +7,9 @@
 
 namespace aeyon
 {
+    /**
+     * Shader class that can be assigned to a Material.
+     */
     class Shader
     {
     private:
@@ -21,7 +20,24 @@ namespace aeyon
         void createPrograms(const std::string& sourceCode);
 
     public:
+        /**
+         * Creates and compiles a shader from the given source code.
+         * Retrieve the compiled shader program by calling Shader::getShaderProgram.
+         * The location of the parsed shader properties can be accessed by Shader::getPropertyMap.
+         *
+         * TODO: Implement support for shader options
+         *
+         * @param sourceCode The shader source code
+         */
         explicit Shader(const std::string& sourceCode);
+
+        Shader(const Shader& other) = delete;
+        Shader& operator=(const Shader& other) = delete;
+
+        Shader(Shader&& other) noexcept;
+        Shader& operator=(Shader&& other) noexcept;
+
+        ~Shader() = default;
 
         const std::string& getName() const;
         ShaderProgram& getShaderProgram(std::size_t passIndex);

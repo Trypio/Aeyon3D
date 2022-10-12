@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_SHADERPROPERTY_HPP
 #define AEYON3D_SHADERPROPERTY_HPP
 
@@ -10,6 +6,9 @@
 
 namespace aeyon
 {
+    /**
+     * OpenGL shader property
+     */
 	struct ShaderProperty
 	{
 		std::string name;

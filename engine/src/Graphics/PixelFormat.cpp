@@ -1,7 +1,3 @@
-//
-//
-//
-
 #include "Graphics/PixelFormat.hpp"
 
 namespace aeyon

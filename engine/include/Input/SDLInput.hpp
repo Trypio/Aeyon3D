@@ -7,10 +7,13 @@
 
 #include <cstdint>
 #include "Input.hpp"
+#include <memory>
 
 
 namespace aeyon
 {
+    class EventSystem;
+
 	class SDLInput : public Input
 	{
 	private:
@@ -21,6 +24,9 @@ namespace aeyon
 		};
 
 		const uint8_t* m_keyboardState;
+        std::unique_ptr<uint8_t[]> m_keyboardStatePrevious;
+        std::unique_ptr<bool[]> m_keyboardStateDiff;
+        int m_num_keys;
 		MouseState m_mouseState;
 		MouseState m_mouseStateRelative;
 
@@ -28,9 +34,13 @@ namespace aeyon
 		SDLInput();
 
 		void update() override;
-		bool isKeyDown(KeyCode keycode) const override;
-		bool isKeyUp(KeyCode keycode) const override;
-		glm::vec2 getMousePosition() const override;
+        bool getKey(KeyCode keycode) const override;
+		bool getKeyDown(KeyCode keycode) const override;
+		bool getKeyUp(KeyCode keycode) const override;
+        bool getMouseButton(MouseButton mouseButton) const override;
+        bool getMouseButtonDown(MouseButton mouseButton) const override;
+        bool getMouseButtonUp(MouseButton mouseButton) const override;
+        glm::vec2 getMousePosition() const override;
 		glm::vec2 getMouseMotion() const override;
 	};
 }

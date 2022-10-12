@@ -152,8 +152,7 @@ namespace aeyon
 		// Extract Mesh
 		if (node->mNumMeshes > 0)
 		{
-			Resource<Mesh> mesh(
-					std::make_shared<ResourceData<Mesh>>("nanosuit", std::make_unique<Mesh>(VertexFormat::P1N1UV1T1B1)));
+			Resource<Mesh> mesh(std::make_unique<Mesh>(VertexFormat::P1N1UV1T1B1));
 
 			mesh->setSubMeshCount(node->mNumMeshes);
 

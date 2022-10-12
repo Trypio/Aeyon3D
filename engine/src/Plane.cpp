@@ -1,12 +1,8 @@
-//
-// Created by thors on 05.11.2019.
-//
-
 #include "Plane.h"
 
 namespace aeyon
 {
-  Plane::Plane(const glm::vec3& p, const glm::vec3& n) : p(p), n(n)
+  Plane::Plane(glm::vec3 p, glm::vec3 n) : p(std::move(p)), n(std::move(n))
   {
   }
 

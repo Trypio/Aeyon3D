@@ -6,7 +6,7 @@
 #include "Transform.hpp"
 #include "Graphics/Camera.hpp"
 #include "glad/glad.h"
-#include "Event/QuitEvent.hpp"
+#include "QuitEvent.hpp"
 #include "Graphics/Texture.hpp"
 #include "Graphics/Mesh.hpp"
 #include "Graphics/MeshRenderer.hpp"
@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <iostream>
-#include <Event/WindowResizeEvent.hpp>
+#include "Graphics/WindowResizeEvent.hpp"
 #include "Graphics/SDLWindow.hpp"
 #include "Event/EventSystem.hpp"
 #include "SceneLoader.hpp"
@@ -55,8 +55,8 @@ namespace aeyon
 
         // Load shadow map texture target and buffers
 
-        m_shadowMap = Resource<Texture>(std::make_shared<ResourceData<Texture>>("ShadowMap", std::make_unique<Texture>(
-                Texture::Type::Tex2D, PixelFormat::Depth, ShadowTexWidth, ShadowTexHeight)));
+        m_shadowMap = Resource<Texture>(std::make_unique<Texture>(
+                Texture::Type::Tex2D, PixelFormat::Depth, ShadowTexWidth, ShadowTexHeight));
 
         glGenFramebuffers(1, &m_shadowFBO);
 
@@ -273,8 +273,8 @@ namespace aeyon
                     Batch& batch = m_batches[material.get()];
                     batch.material = material;
 
-                    batch.vaos.push_back(*static_cast<GLuint*>(mesh->getMesh()->getVertexBuffer().getNativeHandle()));
-                    batch.ebos.push_back(*static_cast<GLuint*>(mesh->getMesh()->getIndexBuffer().getNativeHandle()));
+                    batch.vaos.push_back(std::any_cast<GLuint>(mesh->getMesh()->getVertexBuffer().getNativeHandle()));
+                    batch.ebos.push_back(std::any_cast<GLuint>(mesh->getMesh()->getIndexBuffer().getNativeHandle()));
                     batch.transforms.push_back(actor.getComponent<Transform>());
                     batch.numTriangles.push_back(mesh->getMesh()->getTriangles(i).size());
                     batch.offsets.push_back(mesh->getMesh()->getSubMeshOffset(i));

@@ -1,16 +1,12 @@
-//
-//
-//
-
 #ifndef AEYON3D_QUITEVENT_HPP
 #define AEYON3D_QUITEVENT_HPP
 
-#include "Event.hpp"
+#include "Event/Event.hpp"
 
 namespace aeyon
 {
 	/**
-	 * Dispatching this event terminates the engine
+	 * Dispatching this event terminates the engine.
 	 */
 	class QuitEvent : public Event
 	{

@@ -27,25 +27,6 @@ namespace aeyon
 		P1N1UV1T1B1
 	};
 
-	enum class BufferUsage : GLenum
-	{
-		Static = GL_STATIC_DRAW,
-		Dynamic = GL_DYNAMIC_DRAW
-	};
-
-	enum class VertexType : GLenum
-	{
-		Float = GL_FLOAT,
-		Int = GL_INT
-	};
-
-	struct VertexAttribute
-	{
-		VertexType type;
-		std::size_t count;
-		bool normalized;
-	};
-
 	using TIndex = GLuint;
 
 	enum class FilterMode

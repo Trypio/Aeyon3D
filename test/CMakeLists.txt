@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.8)
-project(Aeyon3DTest VERSION 1.0 LANGUAGES C CXX)
+project(Aeyon3DTests LANGUAGES C CXX)
 
-set(SOURCE_FILES main.cpp ECSTestSuite.cpp)
+set(CMAKE_CXX_STANDARD 17)
 
-add_executable(Aeyon3DTest ${SOURCE_FILES})
+set(SOURCE_FILES EventTest.cpp)
 
-add_subdirectory(lib)
+find_package(Catch2 3 REQUIRED)
 
-target_compile_features(Aeyon3DTest PUBLIC cxx_std_17)
-#target_link_libraries(Aeyon3DTest PUBLIC Aeyon3D catch)
-target_link_libraries(Aeyon3DTest PUBLIC catch)
+add_executable(Aeyon3DTests ${SOURCE_FILES})
+target_link_libraries(Aeyon3DTests PRIVATE Aeyon3D Catch2::Catch2WithMain)

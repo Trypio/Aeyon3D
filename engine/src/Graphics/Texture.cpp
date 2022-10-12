@@ -118,7 +118,7 @@ namespace aeyon
 			glDeleteTextures(1, &m_glHandle);
 	}
 
-	GLuint Texture::getNativeHandle() const
+	std::any Texture::getNativeHandle()
 	{
 		return m_glHandle;
 	}

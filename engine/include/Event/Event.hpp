@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_EVENT_HPP
 #define AEYON3D_EVENT_HPP
 
@@ -10,17 +6,18 @@
 namespace aeyon
 {
 	/**
-	 * Base class of all events
+	 * Base class of all events.
 	 */
 	class Event
 	{
 	private:
-		UUID m_guid = UUID::generate();
+		UUID m_guid;
 
 	public:
+        Event();
 		virtual ~Event() = default;
 
-		UUID getGUID() const;
+		const UUID& getGUID() const;
 	};
 }
 

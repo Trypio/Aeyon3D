@@ -1,15 +1,14 @@
-//
-//
-//
-
 #ifndef AEYON3D_PIXELFORMAT_HPP
 #define AEYON3D_PIXELFORMAT_HPP
 
 #include <string>
-#include "glad/glad.h"
+#include <glad/glad.h>
 
 namespace aeyon
 {
+    /**
+     * Closely describes the pixel format of an image or texture.
+     */
     class PixelFormat
     {
     private:
@@ -30,7 +29,7 @@ namespace aeyon
         {
         }
 
-        std::string getName() const
+        const std::string& getName() const
         {
             return m_name;
         }

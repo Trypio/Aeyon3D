@@ -19,6 +19,8 @@ namespace aeyon
     class Mesh
     {
     private:
+        static std::vector<VertexAttribute> getVertexAttributesFromFormat(VertexFormat format);
+
         std::vector<glm::vec3> m_positions;
         std::vector<glm::vec3> m_normals;
         std::vector<Color> m_colors;
@@ -35,8 +37,6 @@ namespace aeyon
         bool m_needsUpdate;
 
     public:
-        static std::vector<VertexAttribute> getVertexAttributesFromFormat(VertexFormat format);
-
         explicit Mesh(VertexFormat vertexFormat);
 
         VertexBuffer& getVertexBuffer();

@@ -10,6 +10,7 @@
 #include <vector>
 #include "Color.hpp"
 #include "PixelFormat.hpp"
+#include <any>
 
 
 namespace aeyon
@@ -80,7 +81,7 @@ namespace aeyon
 
 		~Texture();
 
-		GLuint getNativeHandle() const;
+		std::any getNativeHandle();
 
 		void apply(bool releaseMemory = false);
 

@@ -15,7 +15,7 @@ namespace aeyon
     glm::vec3 p, n;
 
     Plane() = default;
-    Plane(const glm::vec3& p, const glm::vec3& n);
+    Plane(glm::vec3 p, glm::vec3 n);
 
     float distance(const glm::vec3& point) const;
   };
