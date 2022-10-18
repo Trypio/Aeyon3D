@@ -1,18 +1,8 @@
-//
-//
-//
-
 #include "Graphics/SDLWindow.hpp"
-#include <iostream>
 
 namespace aeyon
 {
-	SDLWindow::SDLWindow(
-			const std::string& title,
-			int x, int y,
-			int width, int height,
-			const Uint32& flags
-			)
+	SDLWindow::SDLWindow(const std::string& title, int x, int y, int width, int height, Uint32 flags)
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -29,7 +19,7 @@ namespace aeyon
 
 		m_glContext = SDL_GL_CreateContext(window);
 
-		setVSync(true);
+        SDL_GL_SetSwapInterval(1);
 		SDL_SetRelativeMouseMode(SDL_TRUE);
 	}
 
@@ -83,7 +73,7 @@ namespace aeyon
 		SDL_SetWindowTitle(m_sdlWindow.get(), title.c_str());
 	}
 
-	std::string SDLWindow::getTitle() const 
+	std::string SDLWindow::getTitle() const
 	{
 		return SDL_GetWindowTitle(m_sdlWindow.get());
 	}
@@ -121,6 +111,7 @@ namespace aeyon
 	{
 		SDL_SetWindowSize(m_sdlWindow.get(), width, height);
 
+        // TODO:
 		/*
 		WindowResizeEvent e;
 		e.width = width;
@@ -217,21 +208,22 @@ namespace aeyon
 		return m_sdlWindow.get();
 	}
 
-	void SDLWindow::setWindowMode(WindowMode mode)
+	void SDLWindow::setWindowMode(Mode mode)
 	{
 		switch (mode)
 		{
-			case WindowMode::Windowed:
+			case Mode::Windowed:
 				SDL_SetWindowFullscreen(m_sdlWindow.get(), 0);
 				break;
-			case WindowMode::WindowedFullscreen:
+			case Mode::WindowedFullscreen:
 				SDL_SetWindowFullscreen(m_sdlWindow.get(), SDL_WINDOW_FULLSCREEN_DESKTOP);
 				break;
-			case WindowMode::Fullscreen:
+			case Mode::Fullscreen:
 				SDL_SetWindowFullscreen(m_sdlWindow.get(), SDL_WINDOW_FULLSCREEN);
 				break;
 		}
 
+        // TODO:
 		/*
 		WindowResizeEvent e;
 		SDL_GetWindowSize(m_sdlWindow.get(), &e.width, &e.height);
@@ -241,21 +233,21 @@ namespace aeyon
 		 */
 	}
 
-	Window::WindowMode SDLWindow::getWindowMode() const
+	Window::Mode SDLWindow::getWindowMode() const
 	{
 		Uint32 flags = SDL_GetWindowFlags(m_sdlWindow.get());
 
 		if ((flags & SDL_WINDOW_FULLSCREEN) != 0 && (flags & (SDL_WINDOW_FULLSCREEN_DESKTOP & ~SDL_WINDOW_FULLSCREEN)) == 0)
 		{
-			return WindowMode::Fullscreen;
+			return Mode::Fullscreen;
 		}
 		else if ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
 		{
-			return WindowMode::WindowedFullscreen;
+			return Mode::WindowedFullscreen;
 		}
 		else
 		{
-			return WindowMode::Windowed;
+			return Mode::Windowed;
 		}
 	}
 }

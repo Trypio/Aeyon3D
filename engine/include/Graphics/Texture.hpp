@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_TEXTURE_HPP
 #define AEYON3D_TEXTURE_HPP
 
@@ -11,7 +7,6 @@
 #include "Color.hpp"
 #include "PixelFormat.hpp"
 #include <any>
-
 
 namespace aeyon
 {
@@ -75,9 +70,12 @@ namespace aeyon
 		Texture(Type type, PixelFormat format, int width, int height = 0, int depth = 0);
 
 		Texture(const Texture& other) = delete;
-		Texture(Texture&& other) noexcept = delete;
-		Texture& operator=(const Texture& rhs) = delete;
-		Texture& operator=(Texture&& rhs) noexcept = delete;
+        Texture& operator=(const Texture& other) = delete;
+
+		Texture(Texture&& other) noexcept;
+		Texture& operator=(Texture&& other) noexcept;
+
+        friend void swap(Texture& first, Texture& second) noexcept;
 
 		~Texture();
 

@@ -1,12 +1,7 @@
-//
-//
-//
-
 #include "Graphics/Texture.hpp"
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
-
 
 namespace aeyon
 {
@@ -36,7 +31,9 @@ namespace aeyon
 				m_wrapU(WrapMode::Repeat), m_wrapV(WrapMode::Repeat), m_wrapW(WrapMode::Repeat),
 				m_filterMode(FilterMode::Trilinear),
 				m_borderColor(Color::Black),
-				m_pixels(6)
+				m_pixels(6),
+                m_anisoLevel(1.0f),
+                m_isReadable(true)
 	{
 		glGenTextures(1, &m_glHandle);
 
@@ -46,17 +43,11 @@ namespace aeyon
 			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest);
 			setAnisoLevel(largest);
 		}
-		else
-		{
-			setAnisoLevel(1.0f);
-		}
 
-
-		GLuint previousBoundTexture = 0;
-
+		GLint previouslyBoundTexture = 0;
 		if (m_type == Type::Tex2D)
 		{
-			glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&previousBoundTexture));
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, &previouslyBoundTexture);
 			glBindTexture(static_cast<GLenum>(m_type), m_glHandle);
 
 			glTexImage2D(
@@ -73,7 +64,7 @@ namespace aeyon
 		}
 		else if (m_type == Type::Tex3D)
 		{
-			glGetIntegerv(GL_TEXTURE_BINDING_3D, reinterpret_cast<GLint*>(&previousBoundTexture));
+			glGetIntegerv(GL_TEXTURE_BINDING_3D, &previouslyBoundTexture);
 			glBindTexture(static_cast<GLenum>(m_type), m_glHandle);
 
 			glTexImage3D(
@@ -91,7 +82,7 @@ namespace aeyon
 		}
 		else if (m_type == Type::Cube)
 		{
-			glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, reinterpret_cast<GLint*>(&previousBoundTexture));
+			glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &previouslyBoundTexture);
 			glBindTexture(static_cast<GLenum>(m_type), m_glHandle);
 
 			for (std::size_t face = 0; face < 6; face++)
@@ -109,13 +100,53 @@ namespace aeyon
 			}
 		}
 
-		glBindTexture(static_cast<GLenum>(m_type), previousBoundTexture);
+		glBindTexture(static_cast<GLenum>(m_type), previouslyBoundTexture);
 	}
+
+    Texture::Texture(Texture&& other) noexcept
+    : m_glHandle(other.m_glHandle),
+    m_type(other.m_type),
+    m_width(other.m_width), m_height(other.m_height), m_depth(other.m_depth),
+    m_filterMode(other.m_filterMode),
+    m_anisoLevel(other.m_anisoLevel),
+    m_wrapU(other.m_wrapU), m_wrapV(other.m_wrapV), m_wrapW(other.m_wrapW),
+    m_isReadable(other.m_isReadable),
+    m_borderColor(other.m_borderColor),
+      m_pixelFormat(std::move(other.m_pixelFormat)),
+      m_pixels(std::move(other.m_pixels))
+    {
+        other.m_glHandle = 0;
+    }
+
+    Texture& Texture::operator=(Texture&& other) noexcept
+    {
+        swap(*this, other);
+        return *this;
+    }
+
+    void swap(Texture& first, Texture& second) noexcept
+    {
+        using std::swap;
+
+        swap(first.m_glHandle, second.m_glHandle);
+        swap(first.m_type, second.m_type);
+        swap(first.m_width, second.m_width);
+        swap(first.m_height, second.m_height);
+        swap(first.m_depth, second.m_depth);
+        swap(first.m_filterMode, second.m_filterMode);
+        swap(first.m_anisoLevel, second.m_anisoLevel);
+        swap(first.m_wrapU, second.m_wrapU);
+        swap(first.m_wrapV, second.m_wrapV);
+        swap(first.m_wrapW, second.m_wrapW);
+        swap(first.m_isReadable, second.m_isReadable);
+        swap(first.m_borderColor, second.m_borderColor);
+        swap(first.m_pixelFormat, second.m_pixelFormat);
+        swap(first.m_pixels, second.m_pixels);
+    }
 
 	Texture::~Texture()
 	{
-		if (m_glHandle)
-			glDeleteTextures(1, &m_glHandle);
+        glDeleteTextures(1, &m_glHandle);
 	}
 
 	std::any Texture::getNativeHandle()
@@ -130,11 +161,10 @@ namespace aeyon
 			throw std::runtime_error("Pixel format is not writable");
 		}
 
-		GLuint previousBoundTexture = 0;
-
+		GLint previouslyBoundTexture = 0;
 		if (m_type == Type::Tex2D)
 		{
-			glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&previousBoundTexture));
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, &previouslyBoundTexture);
 			glBindTexture(GL_TEXTURE_2D, m_glHandle);
 
 			glTexSubImage2D(
@@ -156,7 +186,7 @@ namespace aeyon
 		}
 		else if (m_type == Type::Tex3D)
 		{
-			glGetIntegerv(GL_TEXTURE_BINDING_3D, reinterpret_cast<GLint*>(&previousBoundTexture));
+			glGetIntegerv(GL_TEXTURE_BINDING_3D, &previouslyBoundTexture);
 			glBindTexture(GL_TEXTURE_3D, m_glHandle);
 
 			glTexSubImage3D(
@@ -175,7 +205,7 @@ namespace aeyon
 		}
 		else if (m_type == Type::Cube)
 		{
-			glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, reinterpret_cast<GLint*>(&previousBoundTexture));
+			glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &previouslyBoundTexture);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_glHandle);
 
 			for (std::size_t face = 0; face < 6; face++)
@@ -196,7 +226,7 @@ namespace aeyon
 
 		updateParameters();
 
-		glBindTexture(static_cast<GLenum>(m_type), previousBoundTexture);
+		glBindTexture(static_cast<GLenum>(m_type), previouslyBoundTexture);
 
 		if (releaseMemory)
 		{
@@ -205,7 +235,6 @@ namespace aeyon
 			{
 				std::vector<unsigned char>().swap(f);
 			}
-
 		}
 	}
 

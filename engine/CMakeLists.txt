@@ -28,7 +28,9 @@ set(SOURCE_FILES
         src/Graphics/ShaderParser.cpp
         src/Graphics/PixelFormat.cpp
         src/Graphics/PropertyVisitor.cpp
-        src/SceneLoader.cpp)
+        src/SceneLoader.cpp
+        include/Graphics/VertexAttribute.hpp
+        src/Graphics/MeshRenderer.cpp)
 
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)

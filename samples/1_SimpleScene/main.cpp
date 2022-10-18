@@ -1,4 +1,3 @@
-
 #include "Engine.hpp"
 #include "Util.hpp"
 #include "Primitive.hpp"
@@ -83,11 +82,11 @@ public:
         // TODO: Skybox Komponente erstellen
         m_skybox = Primitive::createCube(false, false);
         auto skyBoxMesh = m_skybox.getComponent<MeshRenderer>();
-        auto skyBoxMeshPositions = skyBoxMesh->getMesh()->getPositions();
+        auto skyBoxMeshPositions = skyBoxMesh->getSharedMesh()->getPositions();
         std::for_each(skyBoxMeshPositions.begin(), skyBoxMeshPositions.end(), [](glm::vec3& v) { v *= 2.0f; });
-        skyBoxMesh->getMesh()->setPositions(skyBoxMeshPositions);
-        skyBoxMesh->setMaterial(skyBoxMaterial);
-        skyBoxMesh->getMesh()->apply();
+        skyBoxMesh->getSharedMesh()->setPositions(skyBoxMeshPositions);
+        skyBoxMesh->setSharedMaterial(skyBoxMaterial);
+        skyBoxMesh->getSharedMesh()->apply();
 
         graphics->setSkybox(&m_skybox);
 
@@ -97,10 +96,10 @@ public:
         Actor ground = Primitive::createPlane();
         ground.setName("Ground");
         auto groundTransform = ground.getComponent<Transform>();
-        groundTransform->setScale({50.0f, 0.1f, 50.0f});
+        groundTransform->setLocalScale({50.0f, 0.1f, 50.0f});
         auto groundMesh = ground.getComponent<MeshRenderer>();
         groundMaterial->setTextureScale({50.0f, 50.0f});
-        groundMesh->setMaterial(groundMaterial);
+        groundMesh->setSharedMaterial(groundMaterial);
 
         scene.addActor(std::move(ground));
 
@@ -117,6 +116,15 @@ public:
 
         scene.addActor(std::move(directionalLight));
 
+//        Actor pointLight("Lamp");
+//        pointLight.getComponent<Transform>()->setPosition({0.0f, 1.0f, -2.0f});
+//        auto pointLightLight = pointLight.addComponent<Light>();
+//        pointLightLight->setType(Light::Type::Point);
+//        pointLightLight->setColor(Color::fromRGBA32(255, 255, 255, 255));
+//        pointLightLight->setIntensity(1.2f);
+//
+//        scene.addActor(std::move(pointLight));
+
         Actor camera("Camera");
         auto cameraTransform = camera.getComponent<Transform>();
         cameraTransform->translate({0.0f, 0.5f, -2.0f});
@@ -127,14 +135,12 @@ public:
 
         scene.addActor(std::move(camera));
 
-        std::vector<Actor> model = loadModel("assets/models/nanosuit/nanosuit.obj", cubeMaterial);
-        model.front().setName("Nano Suit");
-        model.front().getComponent<Transform>()->setScale(glm::vec3(0.1f));
+        std::vector<Actor> models;
+        models.reserve(20); // IMPORTANT: Dynamic allocation would continuously invalidate all pointers
+        Actor* model = aeyon::util::loadModel("assets/models/nanosuit/nanosuit.obj", models, cubeMaterial);
+        model->getComponent<Transform>()->setLocalScale(glm::vec3(0.1f));
 
-        scene.addActors(std::move(model));
-
-
-
+        scene.addActors(std::move(models));
     }
 
     void update() override

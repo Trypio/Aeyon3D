@@ -29,6 +29,17 @@ namespace aeyon
 		return m_parameters;
 	}
 
+    void Material::setParameter(const std::string& name, Material::ParamValue value) {
+        auto it = m_parameters.find(name);
+        if (it == m_parameters.end())
+        {
+            throw std::runtime_error(std::string("Material has no parameter named " + name));
+            return;
+        }
+
+        it->second.value = std::move(value);
+    }
+
 	const std::unordered_map<std::string, GLuint>& Material::getTextureIndexMap() const
 	{
 		return m_textureIndices;

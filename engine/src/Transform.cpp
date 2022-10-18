@@ -11,56 +11,47 @@
 
 namespace aeyon
 {
-	void Transform::markAsChanged()
-	{
-		m_isLocalToWorldMatrixDirty = true;
-		m_isWorldToLocalMatrixDirty = true;
+	Transform::Transform() :
+    m_localPosition(0.0f), m_localRotation(glm::vec3(0.0f)), m_localScale(1.0f),
+    m_position(0.0f), m_rotation(glm::vec3(0.0f)), m_scale(1.0f),
+    m_localEulerAngles(0.0f), m_eulerAngles(0.0f),
+    m_forward(glm::vec3(0.0f, 0.0f, 1.0f)),
+    m_up(glm::vec3(0.0f, 1.0f, 0.0f)),
+    m_right(glm::vec3(1.0f, 0.0f, 0.0f)),
+    m_parent(nullptr),
+    m_localToWorldMatrix(1.0f), m_worldToLocalMatrix(1.0f)
+    {
 	}
 
-	Transform::Transform()
-	: Transform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f))
-	{
-	}
+    void Transform::recalculateDirections()
+    {
+        m_forward = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f) * m_rotation);
+        m_up = glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f) * m_rotation);
+        m_right = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f) * m_rotation);
+    }
 
-	Transform::Transform(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
-	: Transform(position, glm::quat(rotation), scale)
-	{
-	}
+    void Transform::setPosition(const glm::vec3& position)
+    {
+        setLocalPosition((m_parent ? m_parent->getWorldToLocalMatrix() : glm::mat4x4(1.0f))
+                         * glm::vec4(position, 1.0f));
+    }
 
-	Transform::Transform(const glm::vec3& position, const glm::quat& rotation, const glm::vec3& scale)
-	: m_position(position), m_rotation(rotation), m_scale(scale),
-		m_isLocalToWorldMatrixDirty(true), m_isWorldToLocalMatrixDirty(true), m_parent(nullptr)
+	void Transform::setLocalPosition(const glm::vec3& localPosition)
 	{
-	}
-
-	void Transform::setPosition(const glm::vec3& position)
-	{
-		m_position = position;
-		markAsChanged();
-	}
-
-	void Transform::setLocalPosition(const glm::vec3& position)
-	{
-		if (m_parent)
-		{
-			setPosition(m_parent->getPosition() + position);
-		}
-		else
-		{
-			setPosition(position);
-		}
+        m_localPosition = localPosition;
+        applyLocalChanges();
 	}
 
 	void Transform::translate(const glm::vec3& translation)
 	{
-		translate(translation, Space::Self);
+		translate(translation, Space::Local);
 	}
 
 	void Transform::translate(const glm::vec3& translation, Space relativeTo)
 	{
-		if (relativeTo == Space::Self)
+		if (relativeTo == Space::Local)
 		{
-			setPosition(m_position + m_rotation * translation);
+			setLocalPosition(m_localPosition + translation);
 		}
 		else if (relativeTo == Space::World)
 		{
@@ -70,44 +61,36 @@ namespace aeyon
 
 	void Transform::setRotation(const glm::quat& rotation)
 	{
-		m_rotation = rotation;
-		markAsChanged();
+        setLocalRotation((m_parent ? glm::inverse(m_parent->getRotation()) : glm::identity<glm::quat>()) * rotation);
 	}
 
-	void Transform::setRotationEuler(const glm::vec3& eulerAngles)
+    void Transform::setRotation(const glm::vec3& eulerAngles)
+    {
+        setRotation(glm::quat(glm::radians(eulerAngles)));
+    }
+
+    void Transform::setLocalRotation(const glm::quat& rotation)
 	{
-		setRotation(glm::quat(glm::radians(eulerAngles)));
+        m_localRotation = rotation;
+        applyLocalChanges();
 	}
 
+    void Transform::setLocalRotation(const glm::vec3& eulerAngles)
+    {
+        setLocalRotation(glm::quat(glm::radians(eulerAngles)));
+    }
 
-	void Transform::setLocalRotation(const glm::quat& rotation)
+    void Transform::rotate(const glm::vec3& eulerAngles)
 	{
-		if (m_parent)
-		{
-			setRotation(m_parent->getRotation() * rotation);
-		}
-		else
-		{
-			setRotation(rotation);
-		}
-	}
-
-	void Transform::setLocalRotationEuler(const glm::vec3& eulerAngles)
-	{
-		setLocalRotation(glm::quat(glm::radians(eulerAngles)));
-	}
-
-	void Transform::rotate(const glm::vec3& eulerAngles)
-	{
-		rotate(eulerAngles, Space::Self);
+		rotate(eulerAngles, Space::Local);
 	}
 
 	void Transform::rotate(const glm::vec3& eulerAngles, Space relativeTo)
 	{
 		glm::quat rotation(glm::radians(eulerAngles));
-		if (relativeTo == Space::Self)
+		if (relativeTo == Space::Local)
 		{
-			setRotation(m_rotation * rotation);
+            setLocalRotation(m_localRotation * rotation);
 		}
 		else if (relativeTo == Space::World)
 		{
@@ -115,39 +98,34 @@ namespace aeyon
 		}
 	}
 
+    void Transform::rotate(const glm::vec3& axis, float angle)
+    {
+        // TODO
+    }
 
-	void Transform::rotateAround(const glm::vec3& center, const glm::vec3& axis, float angle)
+    void Transform::rotate(const glm::vec3& axis, float angle, Space relativeTo)
+    {
+        // TODO
+    }
+
+    void Transform::rotateAround(const glm::vec3& center, const glm::vec3& axis, float angle)
 	{
-		m_position -= center;
-		m_position = glm::angleAxis(glm::radians(angle), axis) * m_position;
-		m_position += center;
+        glm::vec3 pos = m_position - center;
+		pos = glm::angleAxis(glm::radians(angle), axis) * pos;
+		pos += center;
+        setPosition(pos);
 	}
 
-	void Transform::setScale(const glm::vec3& scale)
+    void Transform::setLocalScale(const glm::vec3& localScale)
 	{
-		m_scale = scale;
-		markAsChanged();
+        m_localScale = localScale;
+        applyLocalChanges();
 	}
 
-
-	void Transform::setLocalScale(const glm::vec3& scale)
+	void Transform::scale(const glm::vec3& scaling)
 	{
-		if (m_parent)
-		{
-			setScale(m_parent->getScale() * scale);
-		}
-		else
-		{
-			setScale(scale);
-		}
+        setLocalScale(m_localScale * scaling);
 	}
-
-
-	void Transform::scale(const glm::vec3& scale)
-	{
-		setScale(m_scale * scale);
-	}
-
 
 	void Transform::lookAt(const glm::vec3& target)
 	{
@@ -156,157 +134,133 @@ namespace aeyon
 
 	void Transform::lookAt(const glm::vec3& target, const glm::vec3& worldUp)
 	{
-		m_rotation = glm::conjugate(glm::toQuat(glm::lookAtLH(m_position, target, worldUp)));
+        setRotation(glm::conjugate(glm::toQuat(glm::lookAtLH(m_position, target, worldUp))));
 	}
 
-	glm::vec3 Transform::getPosition() const
-	{
+	const glm::vec3& Transform::getPosition() const
+    {
 		return m_position;
 	}
 
-	glm::vec3 Transform::getLocalPosition() const
-	{
-		if (m_parent)
-		{
-			return m_parent->getPosition() + m_position;
-		}
-		else
-		{
-			return m_position;
-		}
+	const glm::vec3& Transform::getLocalPosition() const
+    {
+        return m_localPosition;
 	}
 
-	glm::quat Transform::getRotation() const
-	{
+	const glm::quat& Transform::getRotation() const
+    {
 		return m_rotation;
 	}
 
-	glm::quat Transform::getLocalRotation() const
-	{
-		if (m_parent)
-		{
-			return m_rotation * m_parent->getRotation();
-		}
-		else
-		{
-			return m_rotation;
-		}
+	const glm::quat& Transform::getLocalRotation() const
+    {
+        return m_localRotation;
 	}
 
-	glm::vec3 Transform::getRotationEuler() const
-	{
-		return glm::degrees(glm::eulerAngles(m_rotation));
+    const glm::vec3& Transform::getEulerAngles() const
+    {
+        return m_eulerAngles;
+    }
+
+    const glm::vec3& Transform::getLocalEulerAngles() const
+    {
+        return m_localEulerAngles;
+    }
+
+    const glm::vec3& Transform::getScale() const
+    {
+        return m_scale;
+    }
+
+    const glm::vec3& Transform::getLocalScale() const
+    {
+        return m_localScale;
 	}
 
-	glm::vec3 Transform::getLocalRotationEuler() const
-	{
-		if (m_parent)
-		{
-			return glm::degrees(m_rotation * glm::eulerAngles(m_parent->getRotation()));
-		}
-		else
-		{
-			return glm::degrees(glm::eulerAngles(m_rotation));
-		}
+	const glm::vec3& Transform::getForward() const
+    {
+		return m_forward;
 	}
 
-	glm::vec3 Transform::getScale() const
-	{
-		return m_scale;
+	const glm::vec3& Transform::getRight() const
+    {
+		return m_right;
 	}
 
-	glm::vec3 Transform::getLocalScale() const
-	{
-		if (m_parent)
-		{
-			return m_parent->getScale() * m_scale;
-		}
-		else
-		{
-			return m_scale;
-		}
+	const glm::vec3& Transform::getUp() const
+    {
+		return m_up;
 	}
 
-	glm::vec3 Transform::getForward() const
-	{
-		return glm::normalize(m_rotation * glm::vec3(0.0f, 0.0f, 1.0f));
-	}
+    void Transform::recalculateMatrices()
+    {
+        m_localToWorldMatrix = glm::translate(glm::mat4(1.0f), m_localPosition);
+        m_localToWorldMatrix *= glm::mat4_cast(m_localRotation);
+        m_localToWorldMatrix = glm::scale(m_localToWorldMatrix, m_localScale);
 
-	glm::vec3 Transform::getRight() const
-	{
-		return glm::normalize(m_rotation * glm::vec3(1.0f, 0.0f, 0.0f));
-	}
+        m_localToWorldMatrix *= m_parent ? m_parent->getLocalToWorldMatrix() : glm::mat4x4(1.0f);
 
-	glm::vec3 Transform::getUp() const
-	{
-		return glm::normalize(m_rotation * glm::vec3(0.0f, 1.0f, 0.0f));
-	}
+        m_worldToLocalMatrix = glm::inverse(m_localToWorldMatrix);
+    }
 
-	glm::mat4x4 Transform::getLocalToWorldMatrix() const
-	{
-		if (m_isLocalToWorldMatrixDirty)
-		{
-			glm::vec3 eulerAngles = glm::radians(getRotationEuler());
-
-			m_localToWorldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(m_position.x, m_position.y, m_position.z));
-			m_localToWorldMatrix *= glm::mat4_cast(glm::quat(glm::vec3(eulerAngles.x, eulerAngles.y, eulerAngles.z)));
-			m_localToWorldMatrix = glm::scale(m_localToWorldMatrix, glm::vec3(m_scale.x, m_scale.y, m_scale.z));
-
-			m_isLocalToWorldMatrixDirty = false;
-		}
-
+    const glm::mat4x4& Transform::getLocalToWorldMatrix() const
+    {
 		return m_localToWorldMatrix;
 	}
 
-	glm::mat4x4 Transform::getWorldToLocalMatrix() const
-	{
-		if (m_isWorldToLocalMatrixDirty)
-		{
-			m_worldToLocalMatrix = glm::inverse(getLocalToWorldMatrix());
-			m_isWorldToLocalMatrixDirty = false;
-		}
-
+	const glm::mat4x4& Transform::getWorldToLocalMatrix() const
+    {
 		return m_worldToLocalMatrix;
 	}
 
+    void Transform::applyLocalChanges()
+    {
+        recalculateMatrices();
+        m_position = m_localToWorldMatrix[3];
+        m_rotation = m_localToWorldMatrix;
+        m_eulerAngles = glm::degrees(glm::eulerAngles(m_rotation));
+        m_localEulerAngles = glm::degrees(glm::eulerAngles(m_localRotation));
+        m_scale = m_parent ? m_parent->getScale() * m_localScale : m_localScale;
+        recalculateDirections();
+
+        for (auto child : m_children)
+        {
+            assert(child != this);
+            child->applyLocalChanges();
+        }
+    }
 
 	void Transform::setParent(Transform* parent)
 	{
 		if (m_parent != parent)
 		{
-			if (m_parent)
+			if (m_parent != nullptr)
 			{
 				auto& oldParentChildren = m_parent->m_children;
 				oldParentChildren.erase(std::remove(oldParentChildren.begin(), oldParentChildren.end(), this),
 																oldParentChildren.end());
 			}
 
-			m_parent = parent;
-
-			if (m_parent)
+			if (parent != nullptr)
 			{
-				m_parent->m_children.push_back(this);
+				parent->m_children.push_back(this);
 			}
-		}
+
+            m_parent = parent;
+            m_localRotation = glm::inverse(parent->getRotation()) * m_rotation;
+            m_localPosition = m_position - parent->getPosition();
+            m_localScale /= parent->getLocalScale();
+            applyLocalChanges();
+        }
 	}
 
-	Transform* Transform::getParent() const
-	{
-		return m_parent;
-	}
+    Transform* Transform::getParent() const
+    {
+        return m_parent;
+    }
 
-	void Transform::detachChildren()
-	{
-		for (Transform* child : m_children)
-		{
-			child->m_parent = nullptr;
-		}
-
-		m_children.clear();
-	}
-
-	const std::vector<Transform*>& Transform::getChildren() const
-	{
-		return m_children;
-	}
+    const std::vector<Transform*>& Transform::getChildren() const
+    {
+        return m_children;
+    }
 }

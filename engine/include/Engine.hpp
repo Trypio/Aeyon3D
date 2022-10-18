@@ -18,9 +18,6 @@
 #include "System.hpp"
 #include "SceneLoader.hpp"
 
-class aiNode;
-class aiScene;
-
 namespace aeyon
 {
 	class Engine
@@ -44,9 +41,6 @@ namespace aeyon
 		virtual void update();
 		virtual void fixedUpdate();
 		virtual void lateUpdate();
-
-		std::vector<Actor> loadModel(const std::string& path, Resource<Material> material);
-		void processNode(const aiScene* scene, const aiNode* node, Actor root, std::vector<Actor>& children,  Resource<Material> material);
 
 	public:
 		Engine() = default;

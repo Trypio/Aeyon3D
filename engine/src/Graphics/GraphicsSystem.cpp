@@ -1,7 +1,3 @@
-//
-//
-//
-
 #include "Graphics/GraphicsSystem.hpp"
 #include "Transform.hpp"
 #include "Graphics/Camera.hpp"
@@ -17,11 +13,11 @@
 #include "Graphics/PropertyVisitor.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
-#include <iostream>
 #include "Graphics/WindowResizeEvent.hpp"
 #include "Graphics/SDLWindow.hpp"
 #include "Event/EventSystem.hpp"
 #include "SceneLoader.hpp"
+#include <spdlog/spdlog.h>
 
 
 namespace aeyon
@@ -46,10 +42,10 @@ namespace aeyon
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
             glDebugMessageCallbackARB(glDebugCallback, nullptr);
 
-            std::cout << "OpenGL Debug Context initialized" << std::endl;
+            spdlog::info("OpenGL Debug Context initialized");
         } else
         {
-            std::cout << "ARB_debug_output is not supported on this system" << std::endl;
+            spdlog::error("ARB_debug_output is not supported on this system");
         }
 #endif
 
@@ -72,7 +68,7 @@ namespace aeyon
                 GL_FRAMEBUFFER,
                 GL_DEPTH_ATTACHMENT,
                 GL_TEXTURE_2D,
-                m_shadowMap->getNativeHandle(),
+                std::any_cast<GLuint>(m_shadowMap->getNativeHandle()),
                 0
         );
         glDrawBuffer(GL_NONE);
@@ -96,8 +92,7 @@ namespace aeyon
 
     GraphicsSystem::~GraphicsSystem()
     {
-        if (m_shadowFBO)
-            glDeleteFramebuffers(1, &m_shadowFBO);
+        glDeleteFramebuffers(1, &m_shadowFBO);
     }
 
     void GraphicsSystem::setup()
@@ -127,7 +122,6 @@ namespace aeyon
         if (m_cameras.empty())
         {
             throw std::runtime_error("Warning: No main camera defined!");
-            return;
         }
 
         setCommonShaderProperties();
@@ -175,13 +169,13 @@ namespace aeyon
 
             auto skyBoxMesh = m_skyBox->getComponent<MeshRenderer>();
 
-            Batch& b = m_batches[skyBoxMesh->getMaterial().get()];
+            Batch& b = m_batches[skyBoxMesh->getSharedMaterial().get()];
 
-            b.material = skyBoxMesh->getMaterial();
-            b.vaos.push_back(*static_cast<GLuint*>(skyBoxMesh->getMesh()->getVertexBuffer().getNativeHandle()));
-            b.ebos.push_back(*static_cast<GLuint*>(skyBoxMesh->getMesh()->getIndexBuffer().getNativeHandle()));
+            b.material = skyBoxMesh->getSharedMaterial();
+            b.vaos.push_back(std::any_cast<GLuint>(skyBoxMesh->getSharedMesh()->getVertexBuffer().getNativeHandle()));
+            b.ebos.push_back(std::any_cast<GLuint>(skyBoxMesh->getSharedMesh()->getIndexBuffer().getNativeHandle()));
             b.transforms.push_back(m_skyBox->getComponent<Transform>());
-            b.numTriangles.push_back(skyBoxMesh->getMesh()->getTriangles().size());
+            b.numTriangles.push_back(skyBoxMesh->getSharedMesh()->getTriangles().size());
             b.offsets.push_back(0);
 
             setCommonShaderProperties();
@@ -247,7 +241,7 @@ namespace aeyon
 
                 //Frustum culling
                 //TODO: Adjust culling for shadow casters
-                Bounds bb = mesh->getMesh()->getBounds();
+                Bounds bb = mesh->getSharedMesh()->getBounds();
 
                 const auto& toWorld = actor.getComponent<Transform>()->getLocalToWorldMatrix();
 
@@ -263,9 +257,9 @@ namespace aeyon
                     //continue;
                 }
 
-                for (std::size_t i = 0; i < mesh->getMesh()->getSubMeshCount(); i++)
+                for (std::size_t i = 0; i < mesh->getSharedMesh()->getSubMeshCount(); i++)
                 {
-                    auto material = mesh->getMaterials().at(i);
+                    auto material = mesh->getSharedMaterials().at(i);
 
                     if (material->getShader()->getName() != shaderName)
                         continue;
@@ -273,11 +267,11 @@ namespace aeyon
                     Batch& batch = m_batches[material.get()];
                     batch.material = material;
 
-                    batch.vaos.push_back(std::any_cast<GLuint>(mesh->getMesh()->getVertexBuffer().getNativeHandle()));
-                    batch.ebos.push_back(std::any_cast<GLuint>(mesh->getMesh()->getIndexBuffer().getNativeHandle()));
+                    batch.vaos.push_back(std::any_cast<GLuint>(mesh->getSharedMesh()->getVertexBuffer().getNativeHandle()));
+                    batch.ebos.push_back(std::any_cast<GLuint>(mesh->getSharedMesh()->getIndexBuffer().getNativeHandle()));
                     batch.transforms.push_back(actor.getComponent<Transform>());
-                    batch.numTriangles.push_back(mesh->getMesh()->getTriangles(i).size());
-                    batch.offsets.push_back(mesh->getMesh()->getSubMeshOffset(i));
+                    batch.numTriangles.push_back(mesh->getSharedMesh()->getTriangles(i).size());
+                    batch.offsets.push_back(mesh->getSharedMesh()->getSubMeshOffset(i));
                 }
             }
 
@@ -333,10 +327,11 @@ namespace aeyon
         {
             if (actor.hasComponent<MeshRenderer>())
             {
-                Bounds objBounds = actor.getComponent<MeshRenderer>()->getMesh()->getBounds();
+                Bounds objBounds = actor.getComponent<MeshRenderer>()->getSharedMesh()->getBounds();
 
                 // Omit plane
-                if (actor.getComponent<Transform>()->getScale().x > 5.0f)
+                // TODO:
+                if (actor.getComponent<Transform>()->getLocalScale().x > 5.0f)
                     continue;
 
                 auto vs = objBounds.getVertices();
@@ -404,7 +399,7 @@ namespace aeyon
             ShaderProgram& program = batch.first->getShader()->getShaderProgram(passIndex);
             const CameraInfo& mainCamera = m_cameras.front();
 
-            glUseProgram(program.get());
+            glUseProgram(std::any_cast<GLuint>(program.getNativeHandle()));
 
             for (std::size_t i = 0; i < batch.second.vaos.size(); i++)
             {
@@ -455,7 +450,7 @@ namespace aeyon
                 auto tex = std::get<Resource<Texture>>(p.second.value);
                 GLuint tidx = material->getTextureIndexMap().at(p.first);
                 glActiveTexture(GL_TEXTURE0 + tidx);
-                glBindTexture(static_cast<GLenum>(tex->getType()), tex->getNativeHandle());
+                glBindTexture(static_cast<GLenum>(tex->getType()), std::any_cast<GLuint>(tex->getNativeHandle()));
                 glUniform1i(p.second.shaderProperty.location, tidx);
             } else
             {

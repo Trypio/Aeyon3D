@@ -1,11 +1,6 @@
-//
-//
-//
-
 #include "Graphics/Shader.hpp"
 #include <sstream>
 #include <vector>
-#include "Graphics/Shader.hpp"
 #include "Graphics/ShaderParser.hpp"
 
 namespace aeyon
@@ -27,6 +22,8 @@ namespace aeyon
         m_name = std::move(other.m_name);
         m_programs = std::move(other.m_programs);
         m_properties = std::move(other.m_properties);
+
+        return *this;
     }
 
 	void Shader::createPrograms(const std::string& sourceCode)

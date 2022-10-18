@@ -1,8 +1,9 @@
 #include "Graphics/VertexBuffer.hpp"
+#include <stdexcept>
 
 namespace aeyon
 {
-    std::size_t VertexBuffer::sizeOfVertexType(VertexType type) const
+    constexpr std::size_t VertexBuffer::sizeOfVertexType(VertexType type)
     {
         switch (type)
         {
@@ -10,6 +11,8 @@ namespace aeyon
                 return sizeof(GLfloat);
             case VertexType::Int:
                 return sizeof(GLint);
+            default:
+                throw std::invalid_argument("Vertex type not supported");
         }
     }
 
@@ -20,7 +23,7 @@ namespace aeyon
         glGenVertexArrays(1, &m_vao);
         glGenBuffers(1, &m_vbo);
 
-        setVertexAttributes(attributes);
+        setVertexAttributes(m_attributes);
     }
 
     VertexBuffer::VertexBuffer(const aeyon::VertexBuffer& other)

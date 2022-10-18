@@ -13,21 +13,6 @@
 namespace aeyon
 {
 	constexpr std::size_t NumComponentTypes = 20;
-	using Signature = std::bitset<NumComponentTypes>;
-
-	constexpr std::size_t MaxNumberOfComponents = 1024;
-
-	using ResourceID = std::uint32_t;
-
-	enum class VertexFormat
-	{
-		P1,
-		P1N1,
-		P1N1UV1,
-		P1N1UV1T1B1
-	};
-
-	using TIndex = GLuint;
 
 	enum class FilterMode
 	{

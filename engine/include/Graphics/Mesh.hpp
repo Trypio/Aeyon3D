@@ -1,15 +1,11 @@
-//
-//
-//
-
 #ifndef AEYON3D_MESH_HPP
 #define AEYON3D_MESH_HPP
 
 #include <vector>
 #include <memory>
 #include <glm/glm.hpp>
+#include "VertexAttribute.hpp"
 #include "Bounds.hpp"
-#include "Types.hpp"
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 #include "Color.hpp"
@@ -18,9 +14,10 @@ namespace aeyon
 {
     class Mesh
     {
-    private:
-        static std::vector<VertexAttribute> getVertexAttributesFromFormat(VertexFormat format);
+    public:
+        using TIndex = GLuint;
 
+    private:
         std::vector<glm::vec3> m_positions;
         std::vector<glm::vec3> m_normals;
         std::vector<Color> m_colors;

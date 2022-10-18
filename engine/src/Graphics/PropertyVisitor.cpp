@@ -1,7 +1,3 @@
-//
-// Created by thors on 25.07.2019.
-//
-
 #include "Graphics/PropertyVisitor.hpp"
 #include "Color.hpp"
 #include "Graphics/Texture.hpp"

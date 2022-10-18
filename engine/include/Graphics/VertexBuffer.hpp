@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <vector>
 #include <any>
+#include "VertexAttribute.hpp"
 
 namespace aeyon
 {
@@ -15,19 +16,6 @@ namespace aeyon
             Dynamic = GL_DYNAMIC_DRAW
         };
 
-        enum class VertexType : GLenum
-        {
-            Float = GL_FLOAT,
-            Int = GL_INT
-        };
-
-        struct VertexAttribute
-        {
-            VertexType type;
-            std::size_t count;
-            bool normalized;
-        };
-
     private:
         BufferUsage m_bufferUsageType;
         std::size_t m_size;
@@ -36,7 +24,7 @@ namespace aeyon
         GLuint m_vao;
         GLuint m_vbo;
 
-        std::size_t sizeOfVertexType(VertexType type) const;
+        static constexpr std::size_t sizeOfVertexType(VertexType type);
 
     public:
         explicit VertexBuffer(std::vector<VertexAttribute> attributes);

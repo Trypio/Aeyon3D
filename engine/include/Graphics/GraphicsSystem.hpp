@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_RENDERER_HPP
 #define AEYON3D_RENDERER_HPP
 

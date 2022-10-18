@@ -22,6 +22,7 @@ namespace aeyon
 	private:
 		class ICallbackWrapper
 		{
+        public:
             virtual ~ICallbackWrapper() = default;
 		};
 

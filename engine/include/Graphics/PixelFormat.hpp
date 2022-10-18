@@ -16,13 +16,13 @@ namespace aeyon
         std::size_t m_numChannels;
         std::size_t m_channelSize;
         std::size_t m_size;
-        GLenum m_glInternalFormat;
+        GLint m_glInternalFormat;
         GLenum m_glFormat;
         GLenum m_glType;
 
     public:
         PixelFormat(std::string name, std::size_t numChannels, std::size_t channelSize,
-                    GLenum internalFormat, GLenum format, GLenum type)
+                    GLint internalFormat, GLenum format, GLenum type)
                 : m_name(std::move(name)), m_numChannels(numChannels), m_channelSize(channelSize),
                   m_glInternalFormat(internalFormat), m_glFormat(format), m_glType(type),
                   m_size(numChannels * channelSize)
@@ -49,7 +49,7 @@ namespace aeyon
             return m_size;
         }
 
-        GLenum getGLInternalFormat() const
+        GLint getGLInternalFormat() const
         {
             return m_glInternalFormat;
         }

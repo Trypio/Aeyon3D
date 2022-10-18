@@ -1,7 +1,3 @@
-//
-// Created by thors on 06.10.2020.
-//
-
 #ifndef AEYON3D_SYSTEM_HPP
 #define AEYON3D_SYSTEM_HPP
 

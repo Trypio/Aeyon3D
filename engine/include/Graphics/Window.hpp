@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_WINDOW_HPP
 #define AEYON3D_WINDOW_HPP
 
@@ -12,7 +8,7 @@ namespace aeyon
 	class Window
 	{
 	public:
-		enum class WindowMode
+		enum class Mode
 		{
 			Windowed,
 			WindowedFullscreen,
@@ -58,8 +54,8 @@ namespace aeyon
 		virtual void setVSync(bool active) = 0;
 		virtual bool isVSyncEnabled() const = 0;
 
-		virtual void setWindowMode(WindowMode mode) = 0;
-		virtual WindowMode getWindowMode() const = 0;
+		virtual void setWindowMode(Mode mode) = 0;
+		virtual Mode getWindowMode() const = 0;
 	};
 }
 

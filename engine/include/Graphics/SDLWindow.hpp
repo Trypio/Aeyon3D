@@ -1,7 +1,3 @@
-//
-//
-//
-
 #ifndef AEYON3D_SDLWINDOW_HPP
 #define AEYON3D_SDLWINDOW_HPP
 
@@ -29,12 +25,7 @@ namespace aeyon
 		bool m_shouldClose = false;
 
 	public:
-		SDLWindow(
-				const std::string& title,
-				int x, int y,
-				int width, int height,
-				const Uint32& flags
-				);
+		SDLWindow(const std::string& title, int x, int y, int width, int height, Uint32 flags);
 
 		SDLWindow(const SDLWindow&) = delete;
 		SDLWindow& operator=(const SDLWindow&) = delete;
@@ -84,8 +75,8 @@ namespace aeyon
 		void setVSync(bool active) override;
 		bool isVSyncEnabled() const override;
 
-		void setWindowMode(WindowMode mode) override;
-		WindowMode getWindowMode() const override;
+		void setWindowMode(Mode mode) override;
+		Mode getWindowMode() const override;
 	};
 }
 

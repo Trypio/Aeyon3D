@@ -48,8 +48,7 @@ namespace aeyon
 
 		Resource<Shader>& getShader();
 
-		template<typename T>
-		void setParameter(const std::string& name, T&& value);
+		void setParameter(const std::string& name, ParamValue value);
 
 		const std::unordered_map<std::string, Parameter>& getParameterMap() const;
 		const std::unordered_map<std::string, GLuint>& getTextureIndexMap() const;
@@ -59,19 +58,6 @@ namespace aeyon
 		const glm::vec2& getTextureOffset() const;
 		const glm::vec2& getTextureScale() const;
 	};
-
-    // Implementation
-
-    template<typename T>
-    void Material::setParameter(const std::string& name, T&& value) {
-        auto it = m_parameters.find(name);
-        if (it == m_parameters.end())
-        {
-            throw std::runtime_error(std::string("Material has no parameter named " + name));
-        }
-
-        it->second.value = std::forward<T>(value);
-    }
 }
 
 #endif //AEYON3D_MATERIAL_HPP
