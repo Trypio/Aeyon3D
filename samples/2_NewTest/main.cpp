@@ -4,6 +4,7 @@
 #include <iostream>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include "../../engine/include/Space.hpp"
 
 #define VARNAME(var) #var
 
@@ -19,6 +20,9 @@ void printTransform(const Transform& t, const std::string& name)
     std::cout << name << ".localEulerAngles = " << glm::to_string(t.getLocalEulerAngles()) << std::endl;
     std::cout << name << ".scale = " << glm::to_string(t.getScale()) << std::endl;
     std::cout << name << ".localScale = " << glm::to_string(t.getLocalScale()) << std::endl;
+    std::cout << name << ".forward = " << glm::to_string(t.getForward()) << std::endl;
+    std::cout << name << ".right = " << glm::to_string(t.getRight()) << std::endl;
+    std::cout << name << ".up = " << glm::to_string(t.getUp()) << std::endl;
     std::cout << std::endl;
 }
 
@@ -31,16 +35,16 @@ int main(int argc, char* argv[])
     t1.setRotation({0.0f, 0.0f, 0.0f});
     t1.setLocalScale(glm::vec3(1.0f, 1.0f, 1.0f));
 
-    //t1.rotate({45.0f, 90.0f, 0.0f});
-    t1.setLocalRotation({45.0f, 90.0f, 0.0f});
+    t1.rotate({0.0f, 90.0f, 0.0f}, aeyon::Space::World);
+    //t1.setLocalRotation({0.0f, 90.0f, 0.0f});
 
-//    printTransform(t1, VARNAME(t1));
+    printTransform(t1, VARNAME(t1));
 
 //    t2.setParent(&t1);
 //
 //    printTransform(t2, VARNAME(t2));
 
-    std::cout << glm::to_string(glm::degrees(glm::eulerAngles(glm::quat(glm::eulerAngleZYX(glm::radians(45.0f), (glm::radians(90.0f)), (glm::radians(0.0f))))))) << std::endl;
+   // std::cout << glm::to_string(glm::degrees(glm::eulerAngles(glm::quat(glm::eulerAngleZXY(glm::radians(45.0f), (glm::radians(90.0f)), (glm::radians(0.0f))))))) << std::endl;
 
 
 	return 0;

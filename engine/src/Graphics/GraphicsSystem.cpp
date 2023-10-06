@@ -42,7 +42,7 @@ namespace aeyon
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
             glDebugMessageCallbackARB(glDebugCallback, nullptr);
 
-            spdlog::info("OpenGL Debug Context initialized");
+            spdlog::debug("OpenGL Debug Context initialized");
         } else
         {
             spdlog::error("ARB_debug_output is not supported on this system");

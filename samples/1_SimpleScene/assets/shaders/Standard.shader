@@ -69,7 +69,7 @@ float calcDirectionalShadow(vec4 light_dir, vec4 normal)
     float closest_depth = texture(shadow_map, shadow_proj_coords.xy).r; // overridden when PCF is enabled
     float current_depth = shadow_proj_coords.z;
 
-    float bias = 0.001;
+    float bias = 0.002;
     float shadow = 0.0;
 
     // PCF

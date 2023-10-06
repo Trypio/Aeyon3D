@@ -10,6 +10,9 @@
 #include "Graphics/SDLWindow.hpp"
 #include "FirstPersonSystem.hpp"
 
+#include <iostream>
+#include <glm/gtx/string_cast.hpp>
+
 using namespace aeyon;
 
 class SimpleScene : public Engine
@@ -112,7 +115,7 @@ public:
         auto directionalLightLight = directionalLight.addComponent<Light>();
         directionalLightLight->setColor(Color::fromRGBA32(255, 255, 225, 255));
         directionalLightLight->setIntensity(1.2f);
-        directionalLightTransform->rotate({45.0f, 35.0f, 0.0f});
+        directionalLightTransform->setRotation({45.0f, 25.0f, 0.0f});
 
         scene.addActor(std::move(directionalLight));
 
@@ -127,7 +130,7 @@ public:
 
         Actor camera("Camera");
         auto cameraTransform = camera.getComponent<Transform>();
-        cameraTransform->translate({0.0f, 0.5f, -2.0f});
+        cameraTransform->setPosition({0.0f, 0.5f, -2.0f});
         camera.addComponent<Camera>();
         auto controller = camera.addComponent<FirstPersonController>();
         controller->m_moveSpeed = 3.0f;
@@ -138,7 +141,7 @@ public:
         std::vector<Actor> models;
         models.reserve(20); // IMPORTANT: Dynamic allocation would continuously invalidate all pointers
         Actor* model = aeyon::util::loadModel("assets/models/nanosuit/nanosuit.obj", models, cubeMaterial);
-        model->getComponent<Transform>()->setLocalScale(glm::vec3(0.1f));
+        model->getComponent<Transform>()->setLocalScale(glm::vec3(0.5f));
 
         scene.addActors(std::move(models));
     }

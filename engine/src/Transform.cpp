@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <algorithm>
+#include <glm/gtx/euler_angles.hpp>
 
 
 namespace aeyon
@@ -25,9 +26,9 @@ namespace aeyon
 
     void Transform::recalculateDirections()
     {
-        m_forward = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f) * m_rotation);
-        m_up = glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f) * m_rotation);
-        m_right = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f) * m_rotation);
+        m_forward = glm::normalize(m_rotation * glm::vec3(0.0f, 0.0f, 1.0f));
+        m_up = glm::normalize(m_rotation * glm::vec3(0.0f, 1.0f, 0.0f));
+        m_right = glm::normalize(m_rotation * glm::vec3(1.0f, 0.0f, 0.0f));
     }
 
     void Transform::setPosition(const glm::vec3& position)
@@ -66,7 +67,8 @@ namespace aeyon
 
     void Transform::setRotation(const glm::vec3& eulerAngles)
     {
-        setRotation(glm::quat(glm::radians(eulerAngles)));
+        auto rads = glm::radians(eulerAngles);
+        setRotation(glm::quat(glm::eulerAngleZXY(rads.z, rads.x, rads.y)));
     }
 
     void Transform::setLocalRotation(const glm::quat& rotation)
@@ -77,7 +79,8 @@ namespace aeyon
 
     void Transform::setLocalRotation(const glm::vec3& eulerAngles)
     {
-        setLocalRotation(glm::quat(glm::radians(eulerAngles)));
+        auto rads = glm::radians(eulerAngles);
+        setLocalRotation(glm::quat(glm::eulerAngleZXY(rads.z, rads.x, rads.y)));
     }
 
     void Transform::rotate(const glm::vec3& eulerAngles)
@@ -87,10 +90,12 @@ namespace aeyon
 
 	void Transform::rotate(const glm::vec3& eulerAngles, Space relativeTo)
 	{
-		glm::quat rotation(glm::radians(eulerAngles));
+        auto rads = glm::radians(eulerAngles);
+		//glm::quat rotation(glm::radians(eulerAngles)); // TODO: ZXY
+        glm::quat rotation(glm::eulerAngleZXY(rads.z, rads.x, rads.y));
 		if (relativeTo == Space::Local)
 		{
-            setLocalRotation(m_localRotation * rotation);
+            setRotation(m_rotation * rotation);
 		}
 		else if (relativeTo == Space::World)
 		{

@@ -8,6 +8,9 @@
 #include "FirstPersonController.hpp"
 #include "Time.hpp"
 
+#include <iostream>
+#include <glm/gtx/string_cast.hpp>
+
 using namespace aeyon;
 
 FirstPersonSystem::FirstPersonSystem(SceneLoader* sceneLoader, Input* input)
@@ -26,8 +29,8 @@ void FirstPersonSystem::update() {
 
         glm::vec2 mouseMotion = m_input->getMouseMotion();
 
-        transform->rotate({0.0f, controller->m_mouseSensitivity * mouseMotion.x, 0.0f}, Space::World);
         transform->rotate({controller->m_mouseSensitivity * mouseMotion.y, 0.0f, 0.0f});
+        transform->rotate({0.0f, controller->m_mouseSensitivity * mouseMotion.x, 0.0f}, Space::World);
 
         if (m_input->getKey(KeyCode::W) || m_input->getKey(KeyCode::Up) || m_input->getMouseButton(MouseButton::Mouse4))
         {
@@ -36,35 +39,32 @@ void FirstPersonSystem::update() {
             {
                 speed *= 4.0f;
             }
-            transform->translate(glm::vec3(0.0f, 0.0f, speed * Time::getDeltaTime()));
+            transform->translate(transform->getForward() * speed * Time::getDeltaTime());
         }
 
         if (m_input->getKey(KeyCode::A) || m_input->getKey(KeyCode::Left))
         {
-            transform->translate({-controller->m_moveSpeed * Time::getDeltaTime(), 0.0f, 0.0f});
+            transform->translate(transform->getRight() * -controller->m_moveSpeed * Time::getDeltaTime());
         }
 
         if (m_input->getKey(KeyCode::S) || m_input->getKey(KeyCode::Down))
         {
-            transform->translate({0.0f, 0.0f, -controller->m_moveSpeed * Time::getDeltaTime()});
+            transform->translate(transform->getForward() * -controller->m_moveSpeed * Time::getDeltaTime());
         }
 
         if (m_input->getKey(KeyCode::D) || m_input->getKey(KeyCode::Right))
         {
-            transform->translate({controller->m_moveSpeed * Time::getDeltaTime(), 0.0f, 0.0f});
+            transform->translate(transform->getRight() * controller->m_moveSpeed * Time::getDeltaTime());
         }
 
         if (m_input->getKey(KeyCode::Space))
         {
-            transform->translate({0.0f, controller->m_moveSpeed * Time::getDeltaTime(), 0.0f});
+            transform->translate(transform->getUp() * controller->m_moveSpeed * Time::getDeltaTime());
         }
 
         if (m_input->getKey(KeyCode::LeftControl) || m_input->getKey(KeyCode::RightControl))
         {
-            transform->translate({0.0f, -controller->m_moveSpeed * Time::getDeltaTime(), 0.0f});
+            transform->translate(transform->getUp() * -controller->m_moveSpeed * Time::getDeltaTime());
         }
-
-
-
     }
 }
