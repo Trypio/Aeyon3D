@@ -2,8 +2,9 @@
 
 namespace aeyon
 {
-    Light::Light()
-            : m_type(Type::Directional), m_color(Color::White), m_intensity(1.0f),
+    Light::Light(Actor* actor)
+            : Component(actor),
+              m_type(Type::Directional), m_color(Color::White), m_intensity(1.0f),
               m_range(10.0f), m_spotAngle(30.0f)
     {
     }

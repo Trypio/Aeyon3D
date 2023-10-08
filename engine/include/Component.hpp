@@ -7,9 +7,17 @@
 
 namespace aeyon
 {
+    class Actor;
+
 	class Component
 	{
+    private:
+        Actor* m_actor;
+        bool m_isActive;
 	public:
+        explicit Component(Actor* actor);
+        void setActive(bool isActive);
+        bool isActive() const;
 		virtual ~Component() = default;
 	};
 }

@@ -12,7 +12,8 @@
 
 namespace aeyon
 {
-	Transform::Transform() :
+	Transform::Transform(Actor* actor) :
+    Component(actor),
     m_localPosition(0.0f), m_localRotation(glm::vec3(0.0f)), m_localScale(1.0f),
     m_position(0.0f), m_rotation(glm::vec3(0.0f)), m_scale(1.0f),
     m_localEulerAngles(0.0f), m_eulerAngles(0.0f),

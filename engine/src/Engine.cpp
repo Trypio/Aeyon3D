@@ -6,16 +6,12 @@
 
 #include "Engine.hpp"
 #include "Time.hpp"
-#include "Graphics/MeshRenderer.hpp"
 #include "Graphics/GraphicsSystem.hpp"
 #include "Input/SDLInput.hpp"
 #include "Graphics/SDLWindow.hpp"
 #include "GUI/GUISystem.hpp"
-
-#include <iostream>
 #include <SDL2/SDL.h>
 #include <spdlog/spdlog.h>
-#include <algorithm>
 
 namespace aeyon
 {
@@ -46,9 +42,10 @@ namespace aeyon
 
 	void Engine::run()
 	{
-		SDL_Init(SDL_INIT_VIDEO);
+        spdlog::set_level(spdlog::level::debug);
+        spdlog::info("Welcome to Aeyon3D");
 
-		spdlog::info("Welcome to Aeyon3D");
+		SDL_Init(SDL_INIT_VIDEO);
 
 		input = std::make_unique<SDLInput>();
 
@@ -68,24 +65,19 @@ namespace aeyon
 
 		graphics = std::make_unique<GraphicsSystem>(&sceneLoader, dynamic_cast<SDLWindow*>(window.get()));
 		gui = std::make_unique<GUISystem>(graphics.get());
+        behaviors = std::make_unique<BehaviorSystem>(&sceneLoader);
 
 
 		graphics->setup();
 		gui->setup();
         setup();
-		for (auto& system : userSystems)
-		{
-			system->setup();
-		}
+        behaviors->setup();
 
 
 		graphics->start();
 		gui->start();
         start();
-		for (auto& system : userSystems)
-		{
-			system->start();
-		}
+        behaviors->setup();
 
 
 		while (!window->shouldClose())
@@ -94,10 +86,7 @@ namespace aeyon
             m_eventSystem.update();
 			input->update();
 			update();
-			for (auto& system : userSystems)
-			{
-				system->update();
-			}
+            behaviors->update();
 			graphics->update();
             gui->update();
 

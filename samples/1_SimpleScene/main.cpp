@@ -110,23 +110,23 @@ public:
         //box.getComponent<MeshRenderer>()->getMaterial()->setTextureScale({1.0f, 10.0f});
 
 
-        Actor directionalLight("Directional Light");
-        auto directionalLightTransform = directionalLight.getComponent<Transform>();
-        auto directionalLightLight = directionalLight.addComponent<Light>();
-        directionalLightLight->setColor(Color::fromRGBA32(255, 255, 225, 255));
-        directionalLightLight->setIntensity(1.2f);
-        directionalLightTransform->setRotation({45.0f, 25.0f, 0.0f});
-
-        scene.addActor(std::move(directionalLight));
-
-//        Actor pointLight("Lamp");
-//        pointLight.getComponent<Transform>()->setPosition({0.0f, 1.0f, -2.0f});
-//        auto pointLightLight = pointLight.addComponent<Light>();
-//        pointLightLight->setType(Light::Type::Point);
-//        pointLightLight->setColor(Color::fromRGBA32(255, 255, 255, 255));
-//        pointLightLight->setIntensity(1.2f);
+//        Actor directionalLight("Directional Light");
+//        auto directionalLightTransform = directionalLight.getComponent<Transform>();
+//        auto directionalLightLight = directionalLight.addComponent<Light>();
+//        directionalLightLight->setColor(Color::fromRGBA32(255, 255, 225, 255));
+//        directionalLightLight->setIntensity(1.2f);
+//        directionalLightTransform->setRotation({45.0f, 25.0f, 0.0f});
 //
-//        scene.addActor(std::move(pointLight));
+//        scene.addActor(std::move(directionalLight));
+
+        Actor pointLight("Lamp");
+        pointLight.getComponent<Transform>()->setPosition({0.0f, 1.0f, -2.0f});
+        auto pointLightLight = pointLight.addComponent<Light>();
+        pointLightLight->setType(Light::Type::Point);
+        pointLightLight->setColor(Color::fromRGBA32(255, 255, 255, 255));
+        pointLightLight->setIntensity(1.2f);
+
+        scene.addActor(std::move(pointLight));
 
         Actor camera("Camera");
         auto cameraTransform = camera.getComponent<Transform>();

@@ -30,7 +30,7 @@ set(SOURCE_FILES
         src/Graphics/PropertyVisitor.cpp
         src/SceneLoader.cpp
         include/Graphics/VertexAttribute.hpp
-        src/Graphics/MeshRenderer.cpp)
+        src/Graphics/MeshRenderer.cpp src/Actor.cpp src/Component.cpp src/BehaviorSystem.cpp)
 
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -41,12 +41,6 @@ find_package(spdlog REQUIRED)
 
 set(INCLUDE_DIRS_PUBLIC include ${SDL2_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS})
 set(LINK_LIBS_PUBLIC glad stb_image pugixml imgui stduuid spdlog::spdlog_header_only EnumFlags ${SDL2_LIBRARIES} ${OPENGL_gl_LIBRARY} ${ASSIMP_LIBRARIES})
-
-if(${USE_LUA})
-    find_package(Lua 5.3 REQUIRED)
-    list(APPEND INCLUDE_DIRS_PUBLIC ${LUA_INCLUDE_DIR})
-    list(APPEND LINK_LIBS_PUBLIC sol ${LUA_LIBRARIES})
-endif(${USE_LUA})
 
 #get_cmake_property(_variableNames VARIABLES)
 #list (SORT _variableNames)

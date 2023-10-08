@@ -14,6 +14,7 @@
 #include "Graphics/SDLWindow.hpp"
 #include "GUI/GUISystem.hpp"
 #include "Graphics/GraphicsSystem.hpp"
+#include "BehaviorSystem.hpp"
 #include "Input/SDLInput.hpp"
 #include "System.hpp"
 #include "SceneLoader.hpp"
@@ -29,8 +30,7 @@ namespace aeyon
 		std::unique_ptr<Input> input;
 		std::unique_ptr<GraphicsSystem> graphics;
 		std::unique_ptr<GUISystem> gui;
-
-		std::vector<std::unique_ptr<System>> userSystems;
+        std::unique_ptr<BehaviorSystem> behaviors;
 
 		TextureCache textureCache;
 		ShaderCache shaderCache;

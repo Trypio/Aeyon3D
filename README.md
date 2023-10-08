@@ -3,8 +3,7 @@
 ## Description
 
 Aeyon3D is a 3D game engine written in C++17. I've been occasionally working on it since 2018 and it currently comprises several 
-subsystems which are managed by a custom Entity Component System (ECS)
-architecture.
+subsystems on top of a component-based architecture.
 
 ## Features
 * **Rendering System** based on OpenGL 3.3
@@ -14,8 +13,7 @@ architecture.
     - Skyboxes
     - Material System
     - Preprocessed Multi-Pass Custom Shaders
-    - Lua Scripting (_currently disabled due to long compile times_)
-* **Entity Component System**
+* **Component System**
 * **Cross-Platform Input**
 
 ## Upcoming
@@ -47,8 +45,6 @@ architecture.
 - enum-flags (https://github.com/grisumbras/enum-flags)
 - pugixml (https://pugixml.org/)
 - stb_image, stb_vorbis (https://github.com/nothings/stb)
-- Lua (https://www.lua.org/)
-- sol3 (https://github.com/ThePhD/sol2)
 
 ## Resources
 - Textures:

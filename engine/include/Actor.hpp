@@ -19,56 +19,30 @@ namespace aeyon
 	private:
 		std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
 		std::string m_name;
+        bool m_isActive;
 
 	public:
-		Actor()
-		: Actor("")
-		{
-		}
+		Actor();
+		explicit Actor(std::string name);
+        Actor(const Actor& other);
+        Actor(Actor&& other) noexcept;
+        Actor& operator=(Actor other);
 
-		explicit Actor(std::string name)
-		: m_name(std::move(name))
-		{
-			addComponent<Transform>();
-		}
+        friend void swap(Actor& first, Actor& second) noexcept;
 
-        explicit Actor(const Actor& other) :
-        m_name(other.m_name)
-        {
-            for (const auto& c : other.m_components)
-            {
-                m_components.insert(std::make_pair(c.first, std::make_unique<Component>(*c.second)));
-            }
-        }
+        void setName(std::string name);
+        void setActive(bool isActive);
 
-        Actor(Actor&& other) noexcept : Actor()
-        {
-            swap(*this, other);
-        }
+        const std::string& getName() const;
+        bool isActive() const;
 
-        Actor& operator=(Actor other)
-        {
-            swap(*this, other);
-            return *this;
-        }
-
-        friend void swap(Actor& first, Actor& second) noexcept
-        {
-            using std::swap;
-
-            swap(first.m_name, second.m_name);
-            swap(first.m_components, second.m_components);
-        }
-
-        void setName(std::string name)
-        {
-            m_name = std::move(name);
-        }
+        const Transform* getTransform() const;
+        Transform* getTransform();
 
 		template <typename T, typename... Args>
 		T* addComponent(Args ...args)
 		{
-			return static_cast<T*>((m_components[typeid(T)] = std::make_unique<T>(std::forward<Args>(args)...)).get());
+			return static_cast<T*>((m_components[typeid(T)] = std::make_unique<T>(this, std::forward<Args>(args)...)).get());
 		}
 
 		template <typename T>

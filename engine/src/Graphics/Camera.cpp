@@ -2,8 +2,8 @@
 
 namespace aeyon
 {
-    Camera::Camera()
-    : m_nearClipPlane(0.1f), m_farClipPlane(100.0f), m_fieldOfView(45.0f)
+    Camera::Camera(Actor* actor)
+    : Component(actor), m_nearClipPlane(0.1f), m_farClipPlane(100.0f), m_fieldOfView(45.0f)
     {
     }
 

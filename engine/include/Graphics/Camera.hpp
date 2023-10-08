@@ -16,7 +16,7 @@ namespace aeyon
 		float m_fieldOfView;
 
 	public:
-        Camera();
+        explicit Camera(Actor* actor);
 
 		void setNearClipPlane(float distance);
 		void setFarClipPlane(float distance);
