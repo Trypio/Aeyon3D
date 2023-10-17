@@ -42,7 +42,9 @@ namespace aeyon
 		template <typename T, typename... Args>
 		T* addComponent(Args ...args)
 		{
-			return static_cast<T*>((m_components[typeid(T)] = std::make_unique<T>(this, std::forward<Args>(args)...)).get());
+            auto component = std::make_unique<T>(std::forward<Args>(args)...);
+            component->setActor(this);
+			return static_cast<T*>((m_components[typeid(T)] = std::move(component)).get());
 		}
 
 		template <typename T>

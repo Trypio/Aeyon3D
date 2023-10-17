@@ -4,6 +4,7 @@
 #include "ShaderProgram.hpp"
 #include <unordered_map>
 #include "ShaderProperty.hpp"
+#include <cstdint>
 
 namespace aeyon
 {

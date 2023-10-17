@@ -9,14 +9,16 @@
 
 namespace aeyon
 {
+    class Input;
     class SceneLoader;
 
     class BehaviorSystem : public System
     {
     private:
+        Input* m_input;
         SceneLoader* m_sceneLoader;
     public:
-        explicit BehaviorSystem(SceneLoader* sceneLoader);
+        BehaviorSystem(Input* input, SceneLoader* sceneLoader);
         void setup() override;
         void start() override;
         void update() override;

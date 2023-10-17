@@ -2,14 +2,13 @@
 
 namespace aeyon
 {
-    MeshRenderer::MeshRenderer(Actor* actor)
-            : Component(actor), m_isSharedMesh(true), m_isSharedMaterial(true), m_areSharedMaterials(true)
+    MeshRenderer::MeshRenderer()
+            : m_isSharedMesh(true), m_isSharedMaterial(true), m_areSharedMaterials(true)
     {
     }
 
-    MeshRenderer::MeshRenderer(Actor* actor, Resource<Mesh> mesh)
-            : Component(actor),
-              m_mesh(std::move(mesh)), m_isSharedMesh(true), m_isSharedMaterial(true), m_areSharedMaterials(true)
+    MeshRenderer::MeshRenderer(Resource<Mesh> mesh)
+            : m_mesh(std::move(mesh)), m_isSharedMesh(true), m_isSharedMaterial(true), m_areSharedMaterials(true)
     {
     }
 

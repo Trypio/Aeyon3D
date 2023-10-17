@@ -27,7 +27,7 @@ namespace aeyon
 		float m_spotAngle;
 
 	public:
-		explicit Light(Actor* actor);
+		explicit Light();
 
 		void setType(Type type);
 		void setColor(Color color);

@@ -65,7 +65,7 @@ namespace aeyon
 
 		graphics = std::make_unique<GraphicsSystem>(&sceneLoader, dynamic_cast<SDLWindow*>(window.get()));
 		gui = std::make_unique<GUISystem>(graphics.get());
-        behaviors = std::make_unique<BehaviorSystem>(&sceneLoader);
+        behaviors = std::make_unique<BehaviorSystem>(input.get(), &sceneLoader);
 
 
 		graphics->setup();

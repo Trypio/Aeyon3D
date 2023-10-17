@@ -7,22 +7,31 @@
 
 #include "Component.hpp"
 #include "Actor.hpp"
+#include "BehaviorMeta.hpp"
 
 namespace aeyon
 {
     class Transform;
 
-    class Behavior : Component
+    class Behavior : public Component
     {
     protected:
         Transform* transform;
+        Input* input;
+        SceneLoader* sceneLoader;
 
     public:
-        explicit Behavior(Actor* actor) : Component(actor), transform(actor->getTransform()) {}
+        Behavior() : transform(getActor()->getTransform()), input(nullptr), sceneLoader(nullptr) {}
         virtual void setup() {};
         virtual void start() {};
         virtual void update() {};
         virtual void fixedUpdate() {};
+
+        void setBehaviorMeta(const BehaviorMeta& behaviorMeta)
+        {
+            input = behaviorMeta.input;
+            sceneLoader = behaviorMeta.sceneLoader;
+        };
     };
 }
 

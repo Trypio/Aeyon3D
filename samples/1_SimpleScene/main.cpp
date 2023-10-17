@@ -8,7 +8,6 @@
 #include "Graphics/Window.hpp"
 #include "Transform.hpp"
 #include "Graphics/SDLWindow.hpp"
-#include "FirstPersonSystem.hpp"
 
 #include <iostream>
 #include <glm/gtx/string_cast.hpp>
@@ -21,11 +20,6 @@ private:
     Actor m_skybox;
 
 public:
-    void setup() override
-    {
-        userSystems.push_back(std::make_unique<FirstPersonSystem>(&sceneLoader, input.get()));
-    }
-
     void start() override
     {
         Resource<Texture> stoneDiffuse = textureCache.load("Bricks18_col",

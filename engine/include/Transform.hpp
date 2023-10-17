@@ -38,7 +38,7 @@ namespace aeyon
         void applyLocalChanges();
 
 	public:
-		explicit Transform(Actor* actor);
+		Transform();
 
 		void setPosition(const glm::vec3& position);
 		void setLocalPosition(const glm::vec3& localPosition);

@@ -17,8 +17,8 @@ namespace aeyon
 		std::vector<Resource<Material>> m_materials;
 
 	public:
-		explicit MeshRenderer(Actor* actor);
-		MeshRenderer(Actor* actor, Resource<Mesh> mesh);
+		MeshRenderer();
+		explicit MeshRenderer(Resource<Mesh> mesh);
 
         void setSharedMesh(Resource<Mesh> mesh);
 		void setMesh(Resource<Mesh> mesh);

@@ -7,10 +7,11 @@
 namespace aeyon
 {
 
-    Component::Component(Actor* actor) : m_actor(actor), m_isActive(true) {}
+    Component::Component() : m_actor(nullptr), m_isActive(true) {}
 
     void Component::setActive(bool isActive) { m_isActive = isActive; }
-
     bool Component::isActive() const { return m_isActive; }
+    void Component::setActor(Actor* actor) { m_actor = actor; }
+    const Actor* Component::getActor() const { return m_actor; }
+    Actor* Component::getActor() { return m_actor; }
 }
-

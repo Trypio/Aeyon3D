@@ -8,7 +8,7 @@
 
 namespace aeyon
 {
-    BehaviorSystem::BehaviorSystem(SceneLoader* sceneLoader) : m_sceneLoader(sceneLoader)
+    BehaviorSystem::BehaviorSystem(Input* input, SceneLoader* sceneLoader) : m_input(input), m_sceneLoader(sceneLoader)
     {
     }
 
@@ -19,6 +19,10 @@ namespace aeyon
             auto behavior = a.getComponent<Behavior>();
             if (behavior)
             {
+                BehaviorMeta meta {};
+                meta.input = m_input;
+                meta.sceneLoader = m_sceneLoader;
+                behavior->setBehaviorMeta(meta);
                 behavior->setup();
             }
         }

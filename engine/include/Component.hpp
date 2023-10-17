@@ -15,9 +15,12 @@ namespace aeyon
         Actor* m_actor;
         bool m_isActive;
 	public:
-        explicit Component(Actor* actor);
+        explicit Component();
         void setActive(bool isActive);
         bool isActive() const;
+        void setActor(Actor* actor);
+        const Actor* getActor() const;
+        Actor* getActor();
 		virtual ~Component() = default;
 	};
 }
